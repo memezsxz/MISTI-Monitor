@@ -5,7 +5,7 @@ import {PumpPlanView} from "@/components/PumpPlan";
 export default function Home() {
     return (
         <>
-            <div>
+            <div className="bg-zinc-900">
                 <div className="flex min-h-full h-300  items-center justify-center  font-sans bg-zinc-900">
                     <main
                         className="flex  w-full max-w-3xl flex-col items-center justify-between py-32 px-16  sm:items-start">
