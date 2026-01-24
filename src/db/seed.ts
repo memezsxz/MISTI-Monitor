@@ -1,16 +1,27 @@
 import {db} from "./db";
-import {aiChat, NewAiChatRow, NewUser, notifications, users} from "./schema";
+import {aiChat, NewAiChatRow, NewPart, NewUser, notifications, parts, users} from "./schema";
 import {inArray} from "drizzle-orm";
 import {turnoverNotes} from "@/db/schema/turnover_notes";
 import {NewShift, shifts} from "@/db/schema/shifts";
+import {createHash} from "node:crypto";
 
-async function main() {
+function uuidFromString(input: string): string {
+    const hex = createHash("sha1").update(input).digest("hex").slice(0, 32).split("");
+    hex[12] = "5";
+    hex[16] = "a";
+    const h = hex.join("");
+    return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}
 
+
+async function seed_users() {
     await db.insert(users).values([
         {name: "maryam.ali", password: "Ma123!"},
         {name: "manal.albalushi", password: "Ma123!"},
     ] as NewUser[]);
+}
 
+async function seed_notifications() {
     await db.insert(notifications).values([
         {
             category: "low",
@@ -65,6 +76,10 @@ async function main() {
             message: "Temperature exceeded the configured safe limit. Stop system and verify heating/control components."
         },
     ]);
+
+}
+
+async function seed_chats() {
     await db.insert(aiChat).values([
         {
             question: "What is the issue if flow suddenly drops below the safe threshold?",
@@ -112,10 +127,13 @@ async function main() {
                 "- Protocol (stabilize inlet → remove air → verify pump settings → recalibrate sensor)",
         },
     ] as NewAiChatRow[]);
+}
 
+
+async function seed_shifts_notes() {
     // notes & shifts
     const seededUsers = await db
-        .select({ id: users.id, name: users.name })
+        .select({id: users.id, name: users.name})
         .from(users)
         .where(inArray(users.name, ["maryam.ali", "manal.albalushi"]));
 
@@ -154,7 +172,7 @@ async function main() {
                 note: "Handover: heater stable; monitor temperature drift.",
             },
         ] as NewShift[])
-        .returning({ id: shifts.id, userId: shifts.userId });
+        .returning({id: shifts.id, userId: shifts.userId});
 
     const maryamShiftId = insertedShifts.find((s) => s.userId === maryamId)?.id;
     const manalShiftId = insertedShifts.find((s) => s.userId === manalId)?.id;
@@ -190,6 +208,103 @@ async function main() {
         },
     ]);
     // end
+}
+
+
+async function seed_parts() {
+    await db.insert(parts).values(
+        [
+            {name: "Pump", type: "pump", elementId: "pump_1"},
+
+            {name: "Tank 1", type: "tank", elementId: "tank_1"},
+            {name: "Tank 2", type: "tank", elementId: "tank_2"},
+
+            {name: "Sensor 1", type: "sensor", elementId: "sensor_1"},
+            {name: "Sensor 2", type: "sensor", elementId: "sensor_2"},
+            {name: "Sensor 3", type: "sensor", elementId: "sensor_3"},
+            {name: "Sensor 4", type: "sensor", elementId: "sensor_4"},
+            {name: "Sensor 5", type: "sensor", elementId: "sensor_5"},
+            {name: "Sensor 6", type: "sensor", elementId: "sensor_6"},
+            {name: "Sensor 7", type: "sensor", elementId: "sensor_7"},
+            {name: "Sensor 8", type: "sensor", elementId: "sensor_8"},
+
+            {name: "Valve 1", type: "valve", elementId: "valve_1"},
+            {name: "Valve 2", type: "valve", elementId: "valve_2"},
+            {name: "Valve 3", type: "valve", elementId: "valve_3"},
+            {name: "Valve 4", type: "valve", elementId: "valve_4"},
+            {name: "Valve 5", type: "valve", elementId: "valve_5"},
+            {name: "Valve 6", type: "valve", elementId: "valve_6"},
+            {name: "Valve 7", type: "valve", elementId: "valve_7"},
+            {name: "Valve 8", type: "valve", elementId: "valve_8"},
+            {name: "Valve 9", type: "valve", elementId: "valve_9"},
+            {name: "Valve 10", type: "valve", elementId: "valve_10"},
+            {name: "Valve 11", type: "valve", elementId: "valve_11"},
+
+            {name: "Connector L1", type: "connector", elementId: "l_1"},
+            {name: "Connector L3", type: "connector", elementId: "l_3"},
+            {name: "Connector L6", type: "connector", elementId: "l_6"},
+            {name: "Connector L8", type: "connector", elementId: "l_8"},
+            {name: "Connector L9", type: "connector", elementId: "l_9"},
+            {name: "Connector L10", type: "connector", elementId: "l_10"},
+            {name: "Connector L11", type: "connector", elementId: "l_11"},
+            {name: "Connector L13", type: "connector", elementId: "l_13"},
+
+            {name: "Connector T1", type: "connector", elementId: "t_1"},
+            {name: "Connector T4", type: "connector", elementId: "t_4"},
+            {name: "Connector T5", type: "connector", elementId: "t_5"},
+            {name: "Connector T7", type: "connector", elementId: "t_7"},
+            {name: "Connector T12", type: "connector", elementId: "t_12"},
+            {name: "Connector T14", type: "connector", elementId: "t_14"},
+
+            {name: "Pipe 1", type: "pipe", elementId: "pipe_1"},
+            {name: "Pipe 2", type: "pipe", elementId: "pipe_2"},
+            {name: "Pipe 3", type: "pipe", elementId: "pipe_3"},
+            {name: "Pipe 4", type: "pipe", elementId: "pipe_4"},
+            {name: "Pipe 5", type: "pipe", elementId: "pipe_5"},
+            {name: "Pipe 6", type: "pipe", elementId: "pipe_6"},
+            {name: "Pipe 7", type: "pipe", elementId: "pipe_7"},
+            {name: "Pipe 8", type: "pipe", elementId: "pipe_8"},
+            {name: "Pipe 9", type: "pipe", elementId: "pipe_9"},
+            {name: "Pipe 10", type: "pipe", elementId: "pipe_10"},
+            {name: "Pipe 11", type: "pipe", elementId: "pipe_11"},
+            {name: "Pipe 12", type: "pipe", elementId: "pipe_12"},
+            {name: "Pipe 13", type: "pipe", elementId: "pipe_13"},
+            {name: "Pipe 14", type: "pipe", elementId: "pipe_14"},
+            {name: "Pipe 15", type: "pipe", elementId: "pipe_15"},
+            {name: "Pipe 16", type: "pipe", elementId: "pipe_16"},
+            {name: "Pipe 17", type: "pipe", elementId: "pipe_17"},
+            {name: "Pipe 18", type: "pipe", elementId: "pipe_18"},
+            {name: "Pipe 19", type: "pipe", elementId: "pipe_19"},
+            {name: "Pipe 20", type: "pipe", elementId: "pipe_20"},
+            {name: "Pipe 21", type: "pipe", elementId: "pipe_21"},
+            {name: "Pipe 22", type: "pipe", elementId: "pipe_22"},
+            {name: "Pipe 23", type: "pipe", elementId: "pipe_23"},
+            {name: "Pipe 24", type: "pipe", elementId: "pipe_24"},
+            {name: "Pipe 25", type: "pipe", elementId: "pipe_25"},
+            {name: "Pipe 26", type: "pipe", elementId: "pipe_26"},
+            {name: "Pipe 27", type: "pipe", elementId: "pipe_27"},
+            {name: "Pipe 28", type: "pipe", elementId: "pipe_28"},
+            {name: "Pipe 29", type: "pipe", elementId: "pipe_29"},
+            {name: "Pipe 30", type: "pipe", elementId: "pipe_30"},
+            {name: "Pipe 31", type: "pipe", elementId: "pipe_31"},
+            {name: "Pipe 32", type: "pipe", elementId: "pipe_32"},
+            {name: "Pipe 33", type: "pipe", elementId: "pipe_33"},
+            {name: "Pipe 34", type: "pipe", elementId: "pipe_34"},
+            {name: "Pipe 35", type: "pipe", elementId: "pipe_35"},
+            {name: "Pipe 36", type: "pipe", elementId: "pipe_36"},
+            {name: "Pipe 37", type: "pipe", elementId: "pipe_37"},
+            {name: "Pipe 38", type: "pipe", elementId: "pipe_38"},
+            {name: "Pipe 39", type: "pipe", elementId: "pipe_39"},
+        ] as NewPart[]);
+
+}
+
+async function main() {
+    await seed_users()
+    await seed_notifications()
+    await seed_chats()
+    await seed_shifts_notes()
+    await seed_parts()
 }
 
 main()
