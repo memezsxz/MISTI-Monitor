@@ -4,9 +4,6 @@ import { parts } from "./parts";
 export const partLinks = sqliteTable("part_links", {
     id: text("id").primaryKey(),
 
-    // nullable
-    networkId: text("network_id"),
-
     fromPartId: text("from_part_id")
         .notNull()
         .references(() => parts.id, { onDelete: "cascade" }),
@@ -15,7 +12,7 @@ export const partLinks = sqliteTable("part_links", {
         .notNull()
         .references(() => parts.id, { onDelete: "cascade" }),
 
-    relation: text("relation").notNull(),
+    // relation: text("relation").notNull(),
 });
 
 export type PartLink = typeof partLinks.$inferSelect;

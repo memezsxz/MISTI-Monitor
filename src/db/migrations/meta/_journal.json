@@ -29,6 +29,13 @@
       "when": 1769285718714,
       "tag": "0003_busy_magneto",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1769288117851,
+      "tag": "0004_slow_deathstrike",
+      "breakpoints": true
     }
   ]
 }
