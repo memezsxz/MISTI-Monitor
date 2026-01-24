@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769090794555,
+      "tag": "0000_funny_purifiers",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769137836976,
+      "tag": "0001_friendly_mister_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769184141000,
+      "tag": "0002_tough_giant_girl",
+      "breakpoints": true
+    }
+  ]
+}
