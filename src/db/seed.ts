@@ -1,5 +1,17 @@
 import {db} from "./db";
-import {aiChat, NewAiChatRow, NewPart, NewPartLink, NewUser, notifications, partLinks, parts, users} from "./schema";
+import {
+    aiChat,
+    NewAiChatRow,
+    NewPart,
+    NewPartLink,
+    NewSensorReading,
+    NewUser,
+    notifications,
+    partLinks,
+    parts,
+    sensorReadings,
+    users,
+} from "./schema";
 import {inArray} from "drizzle-orm";
 import {turnoverNotes} from "@/db/schema/turnover_notes";
 import {NewShift, shifts} from "@/db/schema/shifts";
@@ -415,10 +427,68 @@ async function seed_part_links() {
     await db.insert(partLinks).values(linkRows);
 }
 
+async function seed_sensor_readings() {
+    const sensorElementIds = [
+        "sensor_1",
+        "sensor_2",
+        "sensor_3",
+        "sensor_4",
+        "sensor_5",
+        "sensor_6",
+        "sensor_7",
+        "sensor_8",
+    ];
+
+    const rows = await db
+        .select({id: parts.id, elementId: parts.elementId})
+        .from(parts)
+        .where(inArray(parts.elementId, sensorElementIds));
+
+    const idByElement = new Map(rows.map((row) => [row.elementId, row.id]));
+
+    const now = new Date();
+    const timestamps = [
+        new Date(now.getTime() - 2 * 60 * 1000),
+        new Date(now.getTime() - 60 * 1000),
+        new Date(now.getTime()),
+    ];
+
+    const baseValues: Record<string, number> = {
+        sensor_1: 2.3,
+        sensor_2: 2.1,
+        sensor_3: 2.2,
+        sensor_4: 2.0,
+        sensor_5: 45.0,
+        sensor_6: 46.2,
+        sensor_7: 44.6,
+        sensor_8: 43.9,
+    };
+
+    const readings: NewSensorReading[] = [];
+    for (const sensorId of sensorElementIds) {
+        const partId = idByElement.get(sensorId);
+        if (partId == null) {
+            throw new Error(`Missing part for sensor ${sensorId}`);
+        }
+        const base = baseValues[sensorId] ?? 0;
+        timestamps.forEach((ts, idx) => {
+            readings.push({
+                id: uuidFromString(`sensor_reading:${sensorId}:${idx}`),
+                sensorPartId: String(partId),
+                ts: ts.toISOString(),
+                value: base + idx * 0.1,
+            });
+        });
+    }
+
+    await db.insert(sensorReadings).values(readings);
+}
+
 async function main() {
     await seed_users()
     await seed_parts()
     await seed_part_links()
+    await seed_sensor_readings()
     await seed_notifications()
     await seed_chats()
     await seed_shifts_notes()
