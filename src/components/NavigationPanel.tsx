@@ -1,13 +1,11 @@
 'use client'
 
 import {
-    faBell as faBellRegular,
     faComment as faCommentRegular,
     faFileLines as faFileLinesRegular
 } from "@fortawesome/free-regular-svg-icons";
 
 import {
-    faBell as faBellSolid,
     faComment as faCommentSolid,
     faFileLines as faFileLinesSolid,
     faInfo
@@ -15,11 +13,10 @@ import {
 import {NavIcon, NavIconProps} from "@/components/NavIcon";
 import {useState} from "react";
 import clsx from "clsx";
-import {NotificationsPanel} from "@/panels/NotificationsPanel";
 import {AIPanel} from "@/panels/AIPanel";
 import {TurnoverPanel} from "@/panels/TurnoverPanel";
 
-export type NavOptions = '' | 'notifications' | 'comments' | 'notes' | 'info';
+export type NavOptions = ''| 'comments' | 'notes' | 'info';
 
 const NavItems: NavIconProps[] = [
     {
