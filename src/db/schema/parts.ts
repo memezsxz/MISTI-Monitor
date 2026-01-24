@@ -10,6 +10,7 @@ export const parts = sqliteTable("parts", {
 
     name: text("name"),
 
+    description: text("description").default(""),
     elementId: text("svg_element_id").notNull().unique(),
 });
 

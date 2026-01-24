@@ -1,5 +1,5 @@
 import {db} from "./db";
-import {aiChat, NewAiChatRow, NewPart, NewUser, notifications, parts, users} from "./schema";
+import {aiChat, NewAiChatRow, NewPart, NewPartLink, NewUser, notifications, partLinks, parts, users} from "./schema";
 import {inArray} from "drizzle-orm";
 import {turnoverNotes} from "@/db/schema/turnover_notes";
 import {NewShift, shifts} from "@/db/schema/shifts";
@@ -299,12 +299,129 @@ async function seed_parts() {
 
 }
 
+async function seed_part_links() {
+    const directedLinks: Array<{from: string; to: string}> = [];
+    const addDirected = (from: string, to: string) => directedLinks.push({from, to});
+
+    // Directed closed loop (only t_* have multi in/out)
+    addDirected("pipe_19", "t_7");
+    addDirected("t_7", "pipe_20");
+    addDirected("t_7", "pipe_21");
+    addDirected("pipe_30", "t_12");
+    addDirected("pipe_31", "t_12");
+    addDirected("t_12", "pipe_32");
+    addDirected("pipe_34", "t_14");
+    addDirected("pipe_39", "t_14");
+    addDirected("t_14", "pipe_35");
+    addDirected("pipe_28", "l_10");
+    addDirected("l_10", "pipe_30");
+    addDirected("pipe_29", "l_11");
+    addDirected("l_11", "pipe_31");
+    addDirected("l_13", "pipe_33");
+    addDirected("pipe_32", "l_13");
+    addDirected("l_3", "pipe_9");
+    addDirected("pipe_8", "l_3");
+    addDirected("pipe_18", "l_6");
+    addDirected("l_6", "pipe_19");
+    addDirected("pipe_5", "l_1");
+    addDirected("l_1", "pipe_6");
+    addDirected("pipe_20", "l_8");
+    addDirected("l_8", "pipe_22");
+    addDirected("pipe_21", "l_9");
+    addDirected("l_9", "pipe_23");
+    addDirected("pump_1", "pipe_1");
+    addDirected("pipe_35", "pump_1");
+    addDirected("pipe_1", "sensor_1");
+    addDirected("sensor_1", "pipe_2");
+    addDirected("pipe_2", "sensor_2");
+    addDirected("sensor_2", "pipe_3");
+    addDirected("pipe_6", "sensor_3");
+    addDirected("sensor_3", "pipe_7");
+    addDirected("pipe_7", "sensor_4");
+    addDirected("sensor_4", "pipe_8");
+    addDirected("pipe_12", "sensor_5");
+    addDirected("sensor_5", "pipe_13");
+    addDirected("pipe_13", "sensor_6");
+    addDirected("sensor_6", "pipe_14");
+    addDirected("pipe_14", "sensor_7");
+    addDirected("sensor_7", "pipe_15");
+    addDirected("pipe_15", "sensor_8");
+    addDirected("sensor_8", "pipe_16");
+    addDirected("pipe_24", "tank_1");
+    addDirected("tank_1", "pipe_26");
+    addDirected("pipe_25", "tank_2");
+    addDirected("tank_2", "pipe_27");
+    addDirected("pipe_3", "t_1");
+    addDirected("t_1", "pipe_4");
+    addDirected("t_1", "pipe_36");
+    addDirected("pipe_10", "t_4");
+    addDirected("t_4", "pipe_11");
+    addDirected("pipe_37", "t_4");
+    addDirected("pipe_16", "t_5");
+    addDirected("t_5", "pipe_17");
+    addDirected("t_5", "pipe_38");
+    addDirected("pipe_4", "valve_1");
+    addDirected("valve_1", "pipe_5");
+    addDirected("pipe_9", "valve_2");
+    addDirected("valve_2", "pipe_10");
+    addDirected("pipe_11", "valve_3");
+    addDirected("valve_3", "pipe_12");
+    addDirected("pipe_17", "valve_4");
+    addDirected("valve_4", "pipe_18");
+    addDirected("pipe_22", "valve_5");
+    addDirected("valve_5", "pipe_24");
+    addDirected("pipe_23", "valve_6");
+    addDirected("valve_6", "pipe_25");
+    addDirected("pipe_26", "valve_7");
+    addDirected("valve_7", "pipe_28");
+    addDirected("pipe_27", "valve_8");
+    addDirected("valve_8", "pipe_29");
+    addDirected("pipe_33", "valve_9");
+    addDirected("valve_9", "pipe_34");
+    addDirected("pipe_36", "valve_10");
+    addDirected("valve_10", "pipe_37");
+    addDirected("pipe_38", "valve_11");
+    addDirected("valve_11", "pipe_39");
+
+    const uniqueLinks = new Map<string, {from: string; to: string}>();
+    for (const link of directedLinks) {
+        uniqueLinks.set(`${link.from}->${link.to}`, link);
+    }
+
+    const elementIds = Array.from(
+        new Set(Array.from(uniqueLinks.values()).flatMap((link) => [link.from, link.to])),
+    );
+
+    const rows = await db
+        .select({id: parts.id, elementId: parts.elementId})
+        .from(parts)
+        .where(inArray(parts.elementId, elementIds));
+
+    const idByElement = new Map(rows.map((row) => [row.elementId, row.id]));
+
+    const linkRows: NewPartLink[] = Array.from(uniqueLinks.values()).map((link) => {
+        const fromId = idByElement.get(link.from);
+        const toId = idByElement.get(link.to);
+        if (fromId == null || toId == null) {
+            throw new Error(`Missing part for link ${link.from} -> ${link.to}`);
+        }
+        return {
+            id: uuidFromString(`part_link:${link.from}->${link.to}`),
+            fromPartId: String(fromId),
+            toPartId: String(toId),
+        };
+    });
+
+    await db.insert(partLinks).values(linkRows);
+}
+
 async function main() {
     await seed_users()
+    await seed_parts()
+    await seed_part_links()
     await seed_notifications()
     await seed_chats()
     await seed_shifts_notes()
-    await seed_parts()
 }
 
 main()
