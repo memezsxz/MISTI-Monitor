@@ -23,12 +23,6 @@ export type NavOptions = '' | 'notifications' | 'comments' | 'notes' | 'info';
 
 const NavItems: NavIconProps[] = [
     {
-        navName: 'notifications',
-        defaultIcon: faBellRegular,
-        activeIcon: faBellSolid,
-        isActive: false,
-    }, // delete this 
-    {
         navName: 'comments',
         defaultIcon: faCommentRegular,
         activeIcon: faCommentSolid,
@@ -58,8 +52,6 @@ export const NavigationPanel = () => {
 
     const panel = () => {
         switch (currentNavSelectedNavOptions) {
-            case 'notifications':
-                return (<NotificationsPanel/>) // dele
             case 'comments':
                 return (<AIPanel/>)
             case 'info':

@@ -13,7 +13,7 @@ import clsx from "clsx";
 export const NotificationsPanel = () => {
   const [rows, setRows] = useState<Notification[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [openIds, setOpenIds] = useState<number[]>([]); // track multiple open notifications
+  const [openIds, setOpenIds] = useState<number[]>([]);
 
   useEffect(() => {
     fetch("/api/notifications")
@@ -63,14 +63,32 @@ export const NotificationsPanel = () => {
                 isOpen && "ring-2 ring-white/60"
               )}
             >
-              <div className={clsx("w-5 h-5 grid place-items-center rounded-full border border-white/20", badge.cls)}>
+              <div
+                className={clsx(
+                  "w-5 h-5 grid place-items-center rounded-full border border-white/20",
+                  badge.cls
+                )}
+              >
                 <FontAwesomeIcon className="text-[0.55rem]" icon={badge.icon} />
               </div>
 
-              <p className="flex-1 min-w-0 font-semibold truncate">{n.title}</p>
+              {/* Responsive text for title */}
+              <p
+                className="
+                  flex-1 min-w-0 font-semibold
+                  sm:whitespace-normal sm:break-words
+                  lg:whitespace-normal lg:break-words
+                "
+                title={n.title}
+              >
+                {n.title}
+              </p>
 
               <p className="shrink-0 text-xs text-white/70">
-                {new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(n.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </p>
             </div>
 
@@ -79,10 +97,13 @@ export const NotificationsPanel = () => {
               <div className="bg-zinc-800 rounded-lg p-3 text-sm text-white space-y-2">
                 <div className="font-bold text-lg">{n.title}</div>
                 <div className="opacity-80">
-                  Category: {n.category} • {new Date(n.createdAt).toLocaleString()}
+                  Category: {n.category} •{" "}
+                  {new Date(n.createdAt).toLocaleString()}
                 </div>
                 <p>{n.message}</p>
-                <div className="opacity-80">Read: {n.isRead ? "Yes" : "No"}</div>
+                <div className="opacity-80">
+                  Read: {n.isRead ? "Yes" : "No"}
+                </div>
               </div>
             )}
           </div>
