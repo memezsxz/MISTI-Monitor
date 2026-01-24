@@ -1,5 +1,5 @@
 "use client";
-import React, {useMemo, useRef, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 
 type TooltipState = {
     open: boolean;
@@ -8,10 +8,15 @@ type TooltipState = {
     targetId: string | null;
 };
 
+type TooltipInfo = {
+    title: string;
+    lines: string[];
+};
+
 function findInteractiveId(el: Element | null) {
     while (el) {
         const id = (el as HTMLElement).id;
-        if (id && /^(sensor|valve|pump|tank|pipe|connector)_/.test(id)) return id;
+        if (id && /^(sensor|valve|pump|tank|pipe|connector|l|t)_/.test(id)) return id;
         el = el.parentElement;
     }
     return null;
@@ -19,17 +24,45 @@ function findInteractiveId(el: Element | null) {
 
 export function PumpPlanView() {
     const wrapRef = useRef<HTMLDivElement | null>(null);
+    const cacheRef = useRef<{ data: Record<string, TooltipInfo>; ts: number } | null>(null);
 
-    // later: replace with DB-fed data keyed by id
-    const infoById = useMemo(() => ({
-        sensor_1: {title: "Sensor 1", lines: ["Flow: 2.3 L/min", "Status: OK"]},
-        pump_1: { title: "Pump", lines: ["RPM: 1450", "Vibration: Low"] },
-        valve_10: { title: "Valve 10", lines: ["Position: 30%", "ΔP: normal"] },
-        valve_11: { title: "Valve 11", lines: ["Position: 40%", "ΔP: normal"] },
-    }), []);
+    const [infoById, setInfoById] = useState<Record<string, TooltipInfo>>({});
+    const [error, setError] = useState<string | null>(null);
 
     const [hoverId, setHoverId] = useState<string | null>(null);
     const [tip, setTip] = useState<TooltipState>({ open: false, x: 0, y: 0, targetId: null });
+
+    useEffect(() => {
+        let active = true;
+
+        const fetchData = async () => {
+            const now = Date.now();
+            if (cacheRef.current && now - cacheRef.current.ts < 5000) {
+                if (active) setInfoById(cacheRef.current.data);
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/pump-plan", { cache: "no-store" });
+                if (!res.ok) throw new Error(await res.text());
+                const data = (await res.json()) as Record<string, TooltipInfo>;
+                if (!active) return;
+                cacheRef.current = { data, ts: Date.now() };
+                setInfoById(data);
+                setError(null);
+            } catch {
+                if (active) setError("Could not fetch pump plan data.");
+            }
+        };
+
+        fetchData();
+        const intervalId = window.setInterval(fetchData, 5000);
+
+        return () => {
+            active = false;
+            window.clearInterval(intervalId);
+        };
+    }, []);
 
     function onMove(e: React.MouseEvent) {
         if (!wrapRef.current) return;
@@ -55,10 +88,18 @@ export function PumpPlanView() {
         setTip((t) => ({ ...t, open: false, targetId: null }));
     }
 
-    const tooltipData = tip.targetId ? infoById[tip.targetId as keyof typeof infoById] : null;
+    const tooltipData = tip.targetId
+        ? infoById[tip.targetId as keyof typeof infoById] ?? {
+            title: tip.targetId,
+            lines: ["No data available"],
+        }
+        : null;
 
     return (
         <div ref={wrapRef} className="relative w-full overflow-visible rounded-2xl border border-white/10 bg-zinc-950">
+            {error ? (
+                <p className="p-3 text-sm text-red-400">{error}</p>
+            ) : null}
             <div >
                 <svg
                     viewBox="0 0 819 1492"
