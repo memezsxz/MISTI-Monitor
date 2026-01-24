@@ -89,11 +89,11 @@ export const NavigationPanel = () => {
       <div
         className={clsx(
           "bg-zinc-800 transition-all duration-300 ease-out overflow-hidden",
-          isOpen ? "w-80 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-2"
+          isOpen ? "w-96 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-2"
         )}
       >
         <div className="h-full overflow-y-auto">
-          <div className="p-7">{panels[currentNavSelectedNavOptions]}</div>
+          <div className="p-3">{panels[currentNavSelectedNavOptions]}</div>
         </div>
       </div>
     </div>
