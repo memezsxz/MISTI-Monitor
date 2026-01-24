@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Notification } from "@/db/schema";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,17 +14,38 @@ export const NotificationsPanel = () => {
   const [rows, setRows] = useState<Notification[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [openIds, setOpenIds] = useState<number[]>([]);
+  const cacheRef = useRef<{ data: Notification[]; ts: number } | null>(null);
 
   useEffect(() => {
-    fetch("/api/notifications")
-      .then(async (r) => {
-        if (!r.ok) throw new Error(await r.text());
-        return r.json();
-      })
-      .then((data: Notification[]) => {
+    let active = true;
+
+    const fetchData = async () => {
+      const now = Date.now();
+      if (cacheRef.current && now - cacheRef.current.ts < 5000) {
+        if (active) setRows(cacheRef.current.data);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/notifications", { cache: "no-store" });
+        if (!res.ok) throw new Error(await res.text());
+        const data = (await res.json()) as Notification[];
+        if (!active) return;
+        cacheRef.current = { data, ts: Date.now() };
         setRows(data);
-      })
-      .catch(() => setError("Could not fetch notifications from the database."));
+        setError(null);
+      } catch {
+        if (active) setError("Could not fetch notifications from the database.");
+      }
+    };
+
+    fetchData();
+    const intervalId = window.setInterval(fetchData, 5000);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   if (error) {
@@ -41,7 +62,7 @@ export const NotificationsPanel = () => {
     <div className="w-full max-w-xl mx-auto p-4 space-y-3">
       {rows.map((n) => {
         const badge = (() => {
-          switch (n.category) {
+          switch (n.level) {
             case "low": return { icon: faCircle, cls: "text-green-300" };
             case "medium": return { icon: faTriangleExclamation, cls: "text-yellow-300" };
             case "high": return { icon: faExclamation, cls: "text-red-300" };
@@ -57,9 +78,9 @@ export const NotificationsPanel = () => {
               onClick={() => toggleOpen(n.id)}
               className={clsx(
                 "rounded px-3 py-2 cursor-pointer text-white flex items-center gap-3",
-                n.category === "low" && "bg-green-700 hover:bg-green-600",
-                n.category === "medium" && "bg-yellow-700 hover:bg-yellow-600",
-                n.category === "high" && "bg-red-700 hover:bg-red-600",
+                n.level === "low" && "bg-green-700 hover:bg-green-600",
+                n.level === "medium" && "bg-yellow-700 hover:bg-yellow-600",
+                n.level === "high" && "bg-red-700 hover:bg-red-600",
                 isOpen && "ring-2 ring-white/60"
               )}
             >
@@ -97,13 +118,10 @@ export const NotificationsPanel = () => {
               <div className="bg-zinc-800 rounded-lg p-3 text-sm text-white space-y-2">
                 <div className="font-bold text-lg">{n.title}</div>
                 <div className="opacity-80">
-                  Category: {n.category} •{" "}
+                  Level: {n.level} •{" "}
                   {new Date(n.createdAt).toLocaleString()}
                 </div>
                 <p>{n.message}</p>
-                <div className="opacity-80">
-                  Read: {n.isRead ? "Yes" : "No"}
-                </div>
               </div>
             )}
           </div>

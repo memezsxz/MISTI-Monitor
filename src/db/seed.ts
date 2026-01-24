@@ -3,6 +3,7 @@ import {
     aiChat,
     NewAiChatRow,
     NewPart,
+    PartDescription,
     NewPartLink,
     NewSensorReading,
     NewUser,
@@ -36,54 +37,54 @@ async function seed_users() {
 async function seed_notifications() {
     await db.insert(notifications).values([
         {
-            category: "low",
+            level: "low",
             title: "System initialized",
             message: "Fluid loop monitoring started. Sensors online: flow, temperature."
         },
         {
-            category: "low",
+            level: "low",
             title: "Baseline mode active",
             message: "Collecting baseline readings for normal operation profile."
         },
         {
-            category: "low",
+            level: "low",
             title: "Calibration reminder",
             message: "Verify flow sensor zero-offset and temperature probe placement."
         },
         {
-            category: "low",
+            level: "low",
             title: "Maintenance schedule",
             message: "Next routine check: inspect hoses, clamps, and bucket levels."
         },
         {
-            category: "low",
+            level: "low",
             title: "Logging enabled",
             message: "Event logging is active. Storing readings at the configured interval."
         },
 
         {
-            category: "medium",
+            level: "medium",
             title: "Temperature drift detected",
             message: "Hot bucket temperature trending below target range. Check heater and insulation."
         },
         {
-            category: "medium",
+            level: "medium",
             title: "Flow instability",
             message: "Flow readings show higher variance than baseline. Check pump speed and inlet conditions."
         },
         {
-            category: "medium",
+            level: "medium",
             title: "Possible valve restriction",
             message: "Flow decreased gradually while pump speed stayed constant. Inspect valve position and blockage."
         },
 
         {
-            category: "high",
+            level: "high",
             title: "Critical flow drop",
             message: "Flow rate fell sharply below safe threshold. Possible blockage, pump issue, or empty supply."
         },
         {
-            category: "high",
+            level: "high",
             title: "Overtemperature risk",
             message: "Temperature exceeded the configured safe limit. Stop system and verify heating/control components."
         },
@@ -223,91 +224,236 @@ async function seed_shifts_notes() {
 }
 
 
-async function seed_parts() {
-    await db.insert(parts).values(
-        [
-            {name: "Pump", type: "pump", elementId: "pump_1"},
+async function seed_parts()  {
+    const pipeLengthsMm: Record<string, number> = {
+        pipe_1: 41.3,
+        pipe_2: 33.7,
+        pipe_3: 84.7,
+        pipe_4: 13.0,
+        pipe_5: 13.3,
+        pipe_6: 227.5,
+        pipe_7: 33.7,
+        pipe_8: 27.5,
+        pipe_9: 13.3,
+        pipe_10: 12.8,
+        pipe_11: 12.8,
+        pipe_12: 38.3,
+        pipe_13: 19.9,
+        pipe_14: 83.2,
+        pipe_15: 20.4,
+        pipe_16: 82.6,
+        pipe_17: 27.5,
+        pipe_18: 33.2,
+        pipe_19: 31.6,
+        pipe_20: 15.3,
+        pipe_21: 14.3,
+        pipe_22: 12.8,
+        pipe_23: 12.8,
+        pipe_24: 30.1,
+        pipe_25: 30.1,
+        pipe_26: 23.5,
+        pipe_27: 23.5,
+        pipe_28: 13.3,
+        pipe_29: 12.8,
+        pipe_30: 14.3,
+        pipe_31: 14.3,
+        pipe_32: 64.3,
+        pipe_33: 31.6,
+        pipe_34: 28.1,
+        pipe_35: 163.8,
+        pipe_36: 32.1,
+        pipe_37: 290.3,
+        pipe_38: 26.0,
+        pipe_39: 296.9,
+    };
 
-            {name: "Tank 1", type: "tank", elementId: "tank_1"},
-            {name: "Tank 2", type: "tank", elementId: "tank_2"},
+    const sensorKinds: Record<string, "flow" | "temperature"> = {
+        sensor_1: "flow",
+        sensor_2: "temperature",
+        sensor_3: "flow",
+        sensor_4: "temperature",
+        sensor_5: "temperature",
+        sensor_6: "flow",
+        sensor_7: "temperature",
+        sensor_8: "flow",
+    };
 
-            {name: "Sensor 1", type: "sensor", elementId: "sensor_1"},
-            {name: "Sensor 2", type: "sensor", elementId: "sensor_2"},
-            {name: "Sensor 3", type: "sensor", elementId: "sensor_3"},
-            {name: "Sensor 4", type: "sensor", elementId: "sensor_4"},
-            {name: "Sensor 5", type: "sensor", elementId: "sensor_5"},
-            {name: "Sensor 6", type: "sensor", elementId: "sensor_6"},
-            {name: "Sensor 7", type: "sensor", elementId: "sensor_7"},
-            {name: "Sensor 8", type: "sensor", elementId: "sensor_8"},
+    const baseDate = new Date(Date.UTC(2025, 0, 15));
+    const dateForIndex = (index: number, offset = 0) => {
+        const d = new Date(baseDate);
+        d.setUTCDate(d.getUTCDate() + ((index + offset) % 6));
+        return d.toISOString().slice(0, 10);
+    };
 
-            {name: "Valve 1", type: "valve", elementId: "valve_1"},
-            {name: "Valve 2", type: "valve", elementId: "valve_2"},
-            {name: "Valve 3", type: "valve", elementId: "valve_3"},
-            {name: "Valve 4", type: "valve", elementId: "valve_4"},
-            {name: "Valve 5", type: "valve", elementId: "valve_5"},
-            {name: "Valve 6", type: "valve", elementId: "valve_6"},
-            {name: "Valve 7", type: "valve", elementId: "valve_7"},
-            {name: "Valve 8", type: "valve", elementId: "valve_8"},
-            {name: "Valve 9", type: "valve", elementId: "valve_9"},
-            {name: "Valve 10", type: "valve", elementId: "valve_10"},
-            {name: "Valve 11", type: "valve", elementId: "valve_11"},
+    const describePart = (part: NewPart, index: number): PartDescription => {
+        const installDate = dateForIndex(index);
+        const maintenanceDue = dateForIndex(index, 3);
+        const inspectionDue = dateForIndex(index, 4);
+        const lastServiceAt = dateForIndex(index, 1);
+        const lastCalibratedAt = dateForIndex(index, 2);
+        const calibrationDue = dateForIndex(index, 5);
 
-            {name: "Connector L1", type: "connector", elementId: "l_1"},
-            {name: "Connector L3", type: "connector", elementId: "l_3"},
-            {name: "Connector L6", type: "connector", elementId: "l_6"},
-            {name: "Connector L8", type: "connector", elementId: "l_8"},
-            {name: "Connector L9", type: "connector", elementId: "l_9"},
-            {name: "Connector L10", type: "connector", elementId: "l_10"},
-            {name: "Connector L11", type: "connector", elementId: "l_11"},
-            {name: "Connector L13", type: "connector", elementId: "l_13"},
+        switch (part.type) {
+            case "pipe":
+                return {
+                    kind: "pipe",
+                    material: "PVC",
+                    diameterMm: 25,
+                    lengthMm: pipeLengthsMm[part.elementId] ?? 0,
+                    maxPressureBar: 4,
+                    installDate,
+                    inspectionDue,
+                };
+            case "valve":
+                return {
+                    kind: "valve",
+                    valveType: "ball",
+                    sizeMm: 25,
+                    normallyOpen: !["valve_6", "valve_10", "valve_11"].includes(part.elementId),
+                    Cv: 4,
+                    installDate,
+                    cycleCount: 0,
+                    maintenanceDue,
+                };
+            case "sensor": {
+                const sensorKind = sensorKinds[part.elementId] ?? "flow";
+                return {
+                    kind: "sensor",
+                    sensorType: sensorKind,
+                    unit: sensorKind === "flow" ? "L/min" : "°C",
+                    range: sensorKind === "flow" ? { min: 0, max: 10 } : { min: 0, max: 100 },
+                    accuracyPct: 2,
+                    lastCalibratedAt,
+                    installDate,
+                    calibrationDue,
+                };
+            }
+            case "pump":
+                return {
+                    kind: "pump",
+                    model: "Small circulation pump",
+                    rpm: 1450,
+                    flowRateLpm: 2.5,
+                    headM: 6,
+                    powerKw: 0.37,
+                    efficiencyPct: 55,
+                    installDate,
+                    lastServiceAt,
+                    maintenanceDue,
+                };
+            case "tank":
+                return {
+                    kind: "tank",
+                    volumeL: 5,
+                    material: "HDPE",
+                    maxTempC: 80,
+                    levelPct: 50,
+                    installDate,
+                    inspectionDue,
+                };
+            case "connector": {
+                const connectorType = part.elementId.startsWith("t_") ? "tee" : "elbow";
+                return {
+                    kind: "connector",
+                    connectorType,
+                    sizeMm: 25,
+                    material: "PVC",
+                    installDate,
+                };
+            }
+        }
+    };
 
-            {name: "Connector T1", type: "connector", elementId: "t_1"},
-            {name: "Connector T4", type: "connector", elementId: "t_4"},
-            {name: "Connector T5", type: "connector", elementId: "t_5"},
-            {name: "Connector T7", type: "connector", elementId: "t_7"},
-            {name: "Connector T12", type: "connector", elementId: "t_12"},
-            {name: "Connector T14", type: "connector", elementId: "t_14"},
+    const baseParts: NewPart[] = [
+        {name: "Pump", type: "pump", elementId: "pump_1"},
 
-            {name: "Pipe 1", type: "pipe", elementId: "pipe_1"},
-            {name: "Pipe 2", type: "pipe", elementId: "pipe_2"},
-            {name: "Pipe 3", type: "pipe", elementId: "pipe_3"},
-            {name: "Pipe 4", type: "pipe", elementId: "pipe_4"},
-            {name: "Pipe 5", type: "pipe", elementId: "pipe_5"},
-            {name: "Pipe 6", type: "pipe", elementId: "pipe_6"},
-            {name: "Pipe 7", type: "pipe", elementId: "pipe_7"},
-            {name: "Pipe 8", type: "pipe", elementId: "pipe_8"},
-            {name: "Pipe 9", type: "pipe", elementId: "pipe_9"},
-            {name: "Pipe 10", type: "pipe", elementId: "pipe_10"},
-            {name: "Pipe 11", type: "pipe", elementId: "pipe_11"},
-            {name: "Pipe 12", type: "pipe", elementId: "pipe_12"},
-            {name: "Pipe 13", type: "pipe", elementId: "pipe_13"},
-            {name: "Pipe 14", type: "pipe", elementId: "pipe_14"},
-            {name: "Pipe 15", type: "pipe", elementId: "pipe_15"},
-            {name: "Pipe 16", type: "pipe", elementId: "pipe_16"},
-            {name: "Pipe 17", type: "pipe", elementId: "pipe_17"},
-            {name: "Pipe 18", type: "pipe", elementId: "pipe_18"},
-            {name: "Pipe 19", type: "pipe", elementId: "pipe_19"},
-            {name: "Pipe 20", type: "pipe", elementId: "pipe_20"},
-            {name: "Pipe 21", type: "pipe", elementId: "pipe_21"},
-            {name: "Pipe 22", type: "pipe", elementId: "pipe_22"},
-            {name: "Pipe 23", type: "pipe", elementId: "pipe_23"},
-            {name: "Pipe 24", type: "pipe", elementId: "pipe_24"},
-            {name: "Pipe 25", type: "pipe", elementId: "pipe_25"},
-            {name: "Pipe 26", type: "pipe", elementId: "pipe_26"},
-            {name: "Pipe 27", type: "pipe", elementId: "pipe_27"},
-            {name: "Pipe 28", type: "pipe", elementId: "pipe_28"},
-            {name: "Pipe 29", type: "pipe", elementId: "pipe_29"},
-            {name: "Pipe 30", type: "pipe", elementId: "pipe_30"},
-            {name: "Pipe 31", type: "pipe", elementId: "pipe_31"},
-            {name: "Pipe 32", type: "pipe", elementId: "pipe_32"},
-            {name: "Pipe 33", type: "pipe", elementId: "pipe_33"},
-            {name: "Pipe 34", type: "pipe", elementId: "pipe_34"},
-            {name: "Pipe 35", type: "pipe", elementId: "pipe_35"},
-            {name: "Pipe 36", type: "pipe", elementId: "pipe_36"},
-            {name: "Pipe 37", type: "pipe", elementId: "pipe_37"},
-            {name: "Pipe 38", type: "pipe", elementId: "pipe_38"},
-            {name: "Pipe 39", type: "pipe", elementId: "pipe_39"},
-        ] as NewPart[]);
+        {name: "Tank 1", type: "tank", elementId: "tank_1"},
+        {name: "Tank 2", type: "tank", elementId: "tank_2"},
+
+        {name: "Sensor 1", type: "sensor", elementId: "sensor_1"},
+        {name: "Sensor 2", type: "sensor", elementId: "sensor_2"},
+        {name: "Sensor 3", type: "sensor", elementId: "sensor_3"},
+        {name: "Sensor 4", type: "sensor", elementId: "sensor_4"},
+        {name: "Sensor 5", type: "sensor", elementId: "sensor_5"},
+        {name: "Sensor 6", type: "sensor", elementId: "sensor_6"},
+        {name: "Sensor 7", type: "sensor", elementId: "sensor_7"},
+        {name: "Sensor 8", type: "sensor", elementId: "sensor_8"},
+
+        {name: "Valve 1", type: "valve", elementId: "valve_1"},
+        {name: "Valve 2", type: "valve", elementId: "valve_2"},
+        {name: "Valve 3", type: "valve", elementId: "valve_3"},
+        {name: "Valve 4", type: "valve", elementId: "valve_4"},
+        {name: "Valve 5", type: "valve", elementId: "valve_5"},
+        {name: "Valve 6", type: "valve", elementId: "valve_6"},
+        {name: "Valve 7", type: "valve", elementId: "valve_7"},
+        {name: "Valve 8", type: "valve", elementId: "valve_8"},
+        {name: "Valve 9", type: "valve", elementId: "valve_9"},
+        {name: "Valve 10", type: "valve", elementId: "valve_10"},
+        {name: "Valve 11", type: "valve", elementId: "valve_11"},
+
+        {name: "Connector L1", type: "connector", elementId: "l_1"},
+        {name: "Connector L3", type: "connector", elementId: "l_3"},
+        {name: "Connector L6", type: "connector", elementId: "l_6"},
+        {name: "Connector L8", type: "connector", elementId: "l_8"},
+        {name: "Connector L9", type: "connector", elementId: "l_9"},
+        {name: "Connector L10", type: "connector", elementId: "l_10"},
+        {name: "Connector L11", type: "connector", elementId: "l_11"},
+        {name: "Connector L13", type: "connector", elementId: "l_13"},
+
+        {name: "Connector T1", type: "connector", elementId: "t_1"},
+        {name: "Connector T4", type: "connector", elementId: "t_4"},
+        {name: "Connector T5", type: "connector", elementId: "t_5"},
+        {name: "Connector T7", type: "connector", elementId: "t_7"},
+        {name: "Connector T12", type: "connector", elementId: "t_12"},
+        {name: "Connector T14", type: "connector", elementId: "t_14"},
+
+        {name: "Pipe 1", type: "pipe", elementId: "pipe_1"},
+        {name: "Pipe 2", type: "pipe", elementId: "pipe_2"},
+        {name: "Pipe 3", type: "pipe", elementId: "pipe_3"},
+        {name: "Pipe 4", type: "pipe", elementId: "pipe_4"},
+        {name: "Pipe 5", type: "pipe", elementId: "pipe_5"},
+        {name: "Pipe 6", type: "pipe", elementId: "pipe_6"},
+        {name: "Pipe 7", type: "pipe", elementId: "pipe_7"},
+        {name: "Pipe 8", type: "pipe", elementId: "pipe_8"},
+        {name: "Pipe 9", type: "pipe", elementId: "pipe_9"},
+        {name: "Pipe 10", type: "pipe", elementId: "pipe_10"},
+        {name: "Pipe 11", type: "pipe", elementId: "pipe_11"},
+        {name: "Pipe 12", type: "pipe", elementId: "pipe_12"},
+        {name: "Pipe 13", type: "pipe", elementId: "pipe_13"},
+        {name: "Pipe 14", type: "pipe", elementId: "pipe_14"},
+        {name: "Pipe 15", type: "pipe", elementId: "pipe_15"},
+        {name: "Pipe 16", type: "pipe", elementId: "pipe_16"},
+        {name: "Pipe 17", type: "pipe", elementId: "pipe_17"},
+        {name: "Pipe 18", type: "pipe", elementId: "pipe_18"},
+        {name: "Pipe 19", type: "pipe", elementId: "pipe_19"},
+        {name: "Pipe 20", type: "pipe", elementId: "pipe_20"},
+        {name: "Pipe 21", type: "pipe", elementId: "pipe_21"},
+        {name: "Pipe 22", type: "pipe", elementId: "pipe_22"},
+        {name: "Pipe 23", type: "pipe", elementId: "pipe_23"},
+        {name: "Pipe 24", type: "pipe", elementId: "pipe_24"},
+        {name: "Pipe 25", type: "pipe", elementId: "pipe_25"},
+        {name: "Pipe 26", type: "pipe", elementId: "pipe_26"},
+        {name: "Pipe 27", type: "pipe", elementId: "pipe_27"},
+        {name: "Pipe 28", type: "pipe", elementId: "pipe_28"},
+        {name: "Pipe 29", type: "pipe", elementId: "pipe_29"},
+        {name: "Pipe 30", type: "pipe", elementId: "pipe_30"},
+        {name: "Pipe 31", type: "pipe", elementId: "pipe_31"},
+        {name: "Pipe 32", type: "pipe", elementId: "pipe_32"},
+        {name: "Pipe 33", type: "pipe", elementId: "pipe_33"},
+        {name: "Pipe 34", type: "pipe", elementId: "pipe_34"},
+        {name: "Pipe 35", type: "pipe", elementId: "pipe_35"},
+        {name: "Pipe 36", type: "pipe", elementId: "pipe_36"},
+        {name: "Pipe 37", type: "pipe", elementId: "pipe_37"},
+        {name: "Pipe 38", type: "pipe", elementId: "pipe_38"},
+        {name: "Pipe 39", type: "pipe", elementId: "pipe_39"},
+    ];
+
+    const partsToInsert = baseParts.map((part, index) => ({
+        ...part,
+        description: describePart(part, index),
+    }));
+
+    await db.insert(parts).values(partsToInsert as NewPart[]);
 
 }
 
