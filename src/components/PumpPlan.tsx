@@ -8,7 +8,7 @@ type TooltipState = {
     targetId: string | null;
 };
 
-type TooltipInfo = {
+export type TooltipInfo = {
     title: string;
     lines: string[];
 };
@@ -22,7 +22,7 @@ function findInteractiveId(el: Element | null) {
     return null;
 }
 
-export function PumpPlanView() {
+export function PumpPlanView({ onSelectPart }: { onSelectPart?: (id: string, info: TooltipInfo | null) => void }) {
     const wrapRef = useRef<HTMLDivElement | null>(null);
     const tooltipRef = useRef<HTMLDivElement | null>(null);
     const cacheRef = useRef<{ data: Record<string, TooltipInfo>; ts: number } | null>(null);
@@ -90,6 +90,13 @@ export function PumpPlanView() {
         setTip((t) => ({ ...t, open: false, targetId: null }));
     }
 
+    function onClick(e: React.MouseEvent) {
+        const id = findInteractiveId(e.target as Element);
+        if (!id) return;
+        const info = infoById[id as keyof typeof infoById] ?? null;
+        onSelectPart?.(id, info);
+    }
+
     const tooltipData = tip.targetId
         ? infoById[tip.targetId as keyof typeof infoById] ?? {
             title: tip.targetId,
@@ -137,6 +144,7 @@ export function PumpPlanView() {
                     xmlns="http://www.w3.org/2000/svg"
                     onMouseMove={onMove}
                     onMouseLeave={onLeave}
+                    onClick={onClick}
                     className="block"
                 >
                     <g id="Group 61">
