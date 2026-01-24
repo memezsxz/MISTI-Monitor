@@ -24,6 +24,7 @@ function findInteractiveId(el: Element | null) {
 
 export function PumpPlanView() {
     const wrapRef = useRef<HTMLDivElement | null>(null);
+    const tooltipRef = useRef<HTMLDivElement | null>(null);
     const cacheRef = useRef<{ data: Record<string, TooltipInfo>; ts: number } | null>(null);
 
     const [infoById, setInfoById] = useState<Record<string, TooltipInfo>>({});
@@ -31,6 +32,7 @@ export function PumpPlanView() {
 
     const [hoverId, setHoverId] = useState<string | null>(null);
     const [tip, setTip] = useState<TooltipState>({ open: false, x: 0, y: 0, targetId: null });
+    const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
     useEffect(() => {
         let active = true;
@@ -94,6 +96,34 @@ export function PumpPlanView() {
             lines: ["No data available"],
         }
         : null;
+    useEffect(() => {
+        if (!tip.open) {
+            setTooltipPos(null);
+            return;
+        }
+        const frame = window.requestAnimationFrame(() => {
+            if (!wrapRef.current || !tooltipRef.current) return;
+            const wrapRect = wrapRef.current.getBoundingClientRect();
+            const tooltipRect = tooltipRef.current.getBoundingClientRect();
+            const padding = 12;
+            let x = tip.x;
+            let y = tip.y;
+
+            if (x + tooltipRect.width + padding > wrapRect.width) {
+                x = Math.max(padding, x - tooltipRect.width - padding);
+            }
+            if (y + tooltipRect.height + padding > wrapRect.height) {
+                y = Math.max(padding, y - tooltipRect.height - padding);
+            }
+
+            x = Math.min(Math.max(padding, x), wrapRect.width - tooltipRect.width - padding);
+            y = Math.min(Math.max(padding, y), wrapRect.height - tooltipRect.height - padding);
+
+            setTooltipPos({ x, y });
+        });
+
+        return () => window.cancelAnimationFrame(frame);
+    }, [tip.open, tip.x, tip.y, tip.targetId, tooltipData?.title]);
 
     return (
         <div ref={wrapRef} className="relative w-full overflow-visible rounded-2xl border border-white/10 bg-zinc-950">
@@ -989,8 +1019,12 @@ export function PumpPlanView() {
 
             {tip.open && tooltipData && (
                 <div
+                    ref={tooltipRef}
                     className="pointer-events-none absolute z-50 rounded-xl border border-white/15 bg-zinc-950/95 px-3 py-2 text-xs text-white/90 shadow-lg"
-                    style={{ left: tip.x, top: tip.y }}
+                    style={{
+                        left: tooltipPos?.x ?? tip.x,
+                        top: tooltipPos?.y ?? tip.y,
+                    }}
                 >
                     <div className="font-semibold">{tooltipData.title}</div>
                     <div className="mt-1 text-white/70 space-y-0.5">
