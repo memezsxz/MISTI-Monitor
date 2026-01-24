@@ -19,6 +19,7 @@ import clsx from "clsx";
 import {NotificationsPanel} from "@/panels/NotificationsPanel";
 import {AIPanel} from "@/panels/AIPanel";
 import {TurnoverPanel} from "@/panels/TurnoverPanel";
+import {InfoPanel} from "@/panels/InfoPanel";
 
 export type NavOptions = '' | 'notifications' | 'comments' | 'notes' | 'info';
 
@@ -49,19 +50,33 @@ const NavItems: NavIconProps[] = [
     },
 ]
 
-export const NavigationPanel = () => {
-  const [currentNavSelectedNavOptions, setCurrentNavSelectedNav] = useState<NavOptions>("");
+export const NavigationPanel = ({
+  currentNav,
+  onNavChange,
+  selectedPartId,
+}: {
+  currentNav?: NavOptions;
+  onNavChange?: (nav: NavOptions) => void;
+  selectedPartId?: string | null;
+}) => {
+  const [internalNav, setInternalNav] = useState<NavOptions>("");
+  const currentNavSelectedNavOptions = currentNav ?? internalNav;
 
   const handleNavClick = (newState: NavOptions) => {
-    setCurrentNavSelectedNav(currentNavSelectedNavOptions !== newState ? newState : "");
+    const next = currentNavSelectedNavOptions !== newState ? newState : "";
+    if (onNavChange) {
+      onNavChange(next);
+    } else {
+      setInternalNav(next);
+    }
   };
 
   const panels: Record<NavOptions, JSX.Element> = {
-    "": <p>Nothing</p>,
+      "": <p> </p>,
     notifications: <NotificationsPanel />,
     comments: <AIPanel />,
     notes: <TurnoverPanel />,
-    info: <p>Info</p>,
+    info: <InfoPanel selectedPartId={selectedPartId ?? null} />,
   };
 
   const isOpen = currentNavSelectedNavOptions !== "";
