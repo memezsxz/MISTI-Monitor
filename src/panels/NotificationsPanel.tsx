@@ -15,6 +15,13 @@ export const NotificationsPanel = () => {
   const [error, setError] = useState<string | null>(null);
   const [openIds, setOpenIds] = useState<number[]>([]);
   const cacheRef = useRef<{ data: Notification[]; ts: number } | null>(null);
+  const getColor = (level: Notification["level"]) => {
+    switch (level) {
+      case "low": return { icon: faCircle, cls: "text-green-300", bg: "bg-green-700 hover:bg-green-600" };
+      case "medium": return { icon: faTriangleExclamation, cls: "text-yellow-300", bg: "bg-yellow-700 hover:bg-yellow-600" };
+      case "high": return { icon: faExclamation, cls: "text-red-300", bg: "bg-red-700 hover:bg-red-600" };
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -61,13 +68,7 @@ export const NotificationsPanel = () => {
   return (
     <div className="w-full max-w-xl mx-auto p-4 space-y-3">
       {rows.map((n) => {
-        const badge = (() => {
-          switch (n.level) {
-            case "low": return { icon: faCircle, cls: "text-green-300" };
-            case "medium": return { icon: faTriangleExclamation, cls: "text-yellow-300" };
-            case "high": return { icon: faExclamation, cls: "text-red-300" };
-          }
-        })();
+        const badge = getColor(n.level);
 
         const isOpen = openIds.includes(n.id);
 
@@ -78,19 +79,19 @@ export const NotificationsPanel = () => {
               onClick={() => toggleOpen(n.id)}
               className={clsx(
                 "rounded px-3 py-2 cursor-pointer text-white flex items-center gap-3",
-                n.level === "low" && "bg-green-700 hover:bg-green-600",
-                n.level === "medium" && "bg-yellow-700 hover:bg-yellow-600",
-                n.level === "high" && "bg-red-700 hover:bg-red-600",
+                badge?.bg,
                 isOpen && "ring-2 ring-white/60"
               )}
             >
               <div
                 className={clsx(
                   "w-5 h-5 grid place-items-center rounded-full border border-white/20",
-                  badge.cls
+                  badge?.cls
                 )}
               >
-                <FontAwesomeIcon className="text-[0.55rem]" icon={badge.icon} />
+                {badge ? (
+                  <FontAwesomeIcon className="text-[0.55rem]" icon={badge.icon} />
+                ) : null}
               </div>
 
               {/* Responsive text for title */}
@@ -115,7 +116,7 @@ export const NotificationsPanel = () => {
 
             {/* Inline details */}
             {isOpen && (
-              <div className="bg-zinc-800 rounded-lg p-3 text-sm text-white space-y-2">
+              <div className={`bg-zinc-900 rounded-lg p-3 text-sm text-white space-y-2`}>
                 <div className="font-bold text-lg">{n.title}</div>
                 <div className="opacity-80">
                   Level: {n.level} •{" "}
