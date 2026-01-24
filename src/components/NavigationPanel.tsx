@@ -1,5 +1,6 @@
 'use client'
 
+import { ReactNode, JSX } from "react";
 import {
     faBell as faBellRegular,
     faComment as faCommentRegular,
@@ -49,83 +50,52 @@ const NavItems: NavIconProps[] = [
 ]
 
 export const NavigationPanel = () => {
-    const [currentNavSelectedNavOptions, setCurrentNavSelectedNav] = useState('' as NavOptions);
-    const [panelHeight, setPanelHeight] = useState(320); // default height
-    const [dragging, setDragging] = useState(false);
+  const [currentNavSelectedNavOptions, setCurrentNavSelectedNav] = useState<NavOptions>("");
 
-    const handleNavClick = (newState: NavOptions) => {
-        setCurrentNavSelectedNav(currentNavSelectedNavOptions !== newState ? newState : '')
-    }
+  const handleNavClick = (newState: NavOptions) => {
+    setCurrentNavSelectedNav(currentNavSelectedNavOptions !== newState ? newState : "");
+  };
 
-    const panel = () => {
-        switch (currentNavSelectedNavOptions) {
-            case 'notifications':
-                return (<NotificationsPanel/>)
-            case 'comments':
-                return (<AIPanel/>)
-            case 'info':
-                return (<p>Info</p>)
-            case 'notes':
-                return (<TurnoverPanel/>)
-            default:
-                return (<p>Nothing</p>)
-        }
-    }
+  const panels: Record<NavOptions, JSX.Element> = {
+    "": <p>Nothing</p>,
+    notifications: <NotificationsPanel />,
+    comments: <AIPanel />,
+    notes: <TurnoverPanel />,
+    info: <p>Info</p>,
+  };
 
-    const isOpen = currentNavSelectedNavOptions !== "";
+  const isOpen = currentNavSelectedNavOptions !== "";
 
-    // Drag handlers
-    const startDrag = () => setDragging(true);
-    const stopDrag = () => setDragging(false);
-    const onDrag = (e: React.MouseEvent) => {
-        if (dragging) {
-            const newHeight = window.innerHeight - e.clientY;
-            if (newHeight > 150 && newHeight < 600) {
-                setPanelHeight(newHeight);
-            }
-        }
-    };
+  return (
+    <div className="fixed top-0 left-0 h-full flex z-10">
+      {/* Sidebar with icons */}
 
-    return (
-        <div
-            className="fixed z-10 bottom-0 left-0 right-0"
-            onMouseMove={onDrag}
-            onMouseUp={stopDrag}
-            onMouseLeave={stopDrag}
-        >
-            {/* Drag handle ABOVE icons */}
-            {isOpen && (
-                <div
-                    className="h-2 cursor-row-resize bg-zinc-700 hover:bg-zinc-600"
-                    onMouseDown={startDrag}
-                />
-            )}
+      <div 
+      className={clsx( 
+        "bg-zinc-800 w-16 h-full flex flex-col items-center justify-center gap-6", 
+        isOpen && "border-r border-black" 
+        )} 
+        > 
+        {NavItems.map((item) => ( 
+            <NavIcon key={"nav" + item.navName} 
+            {...item} 
+            isActive={currentNavSelectedNavOptions === item.navName} 
+            handleClick={handleNavClick} 
+            /> 
+        ))} 
+    </div>
 
-            {/* Icon bar */}
-            <div className={clsx(
-                "bg-zinc-800 h-12 flex justify-center items-center py-4 gap-3",
-                isOpen ? "border-b-1 border-black" : ""
-            )}>
-                {NavItems.map((item) => {
-                    item.isActive = currentNavSelectedNavOptions === item.navName
-                    item.handleClick = handleNavClick
-                    return <NavIcon key={'nav' + item.navName} {...item} />
-                })}
-            </div>
-
-            {/* Expanding panel */}
-            <div
-                className={clsx(
-                    "bg-zinc-800",
-                    "grid overflow-hidden transition-[grid-template-rows,opacity,transform] duration-300 ease-out",
-                    isOpen ? "grid-rows-[1fr] opacity-100 translate-y-0" : "grid-rows-[0fr] opacity-0 translate-y-2"
-                )}
-                style={{ height: isOpen ? panelHeight : 0 }}
-            >
-                <div className="min-h-0 overflow-y-auto">
-                    <div className="p-7">{panel()}</div>
-                </div>
-            </div>
+      {/* Panel content */}
+      <div
+        className={clsx(
+          "bg-zinc-800 transition-all duration-300 ease-out overflow-hidden",
+          isOpen ? "w-80 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-2"
+        )}
+      >
+        <div className="h-full overflow-y-auto">
+          <div className="p-7">{panels[currentNavSelectedNavOptions]}</div>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};

@@ -217,7 +217,7 @@ export const TurnoverPanel = () => {
     }
 
     return (
-        <div className="grid gap-3 max-h-[70vh] overflow-y-auto">
+        <div className="grid gap-3 w-full h-full">
             {shiftsAsc.map((shift) => {
                 const expanded = expandedShiftId === shift.id;
                 const isCurrent = currentShiftId === shift.id;
@@ -234,7 +234,7 @@ export const TurnoverPanel = () => {
                             onClick={() => toggleShift(shift.id)}
                             className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/5 transition text-left"
                         >
-                            <div className="min-w-0">
+                            <div className="min-w-0 ">
                                 <div className="flex items-center gap-2">
                                     <span className="font-semibold truncate">{shift.userName?.trim() || `User #${shift.userId}`}</span>
 
@@ -245,7 +245,7 @@ export const TurnoverPanel = () => {
                                     )}
                                 </div>
 
-                                <div className="text-xs text-white/60 mt-1">
+                                <div className="text-xs text-white/60 mt-1 ">
                                     Start: {formatTime(shift.startedAt)}
                                     {shift.endedAt ? ` • End: ${formatTime(shift.endedAt)}` : " • End: —"}
                                 </div>
@@ -255,7 +255,7 @@ export const TurnoverPanel = () => {
                         </button>
 
                         {expanded && (
-                            <div className="px-4 pb-4">
+                            <div className="px-4 pb-4 ">
                                 <div className="relative pl-6 grid gap-3">
                                     <div className="absolute left-2 top-1 bottom-1 w-px bg-white/10" />
 
