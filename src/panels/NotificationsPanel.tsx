@@ -97,7 +97,7 @@ export const NotificationsPanel = () => {
               {/* Responsive text for title */}
               <p
                 className="
-                  flex-1 min-w-0 font-semibold 
+                  flex-1 min-w-0 font-mono 
                   sm:whitespace-normal sm:break-words
                   lg:whitespace-normal lg:break-words
                 "
