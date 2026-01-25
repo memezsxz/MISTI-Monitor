@@ -13,11 +13,19 @@ export type NavIconProps = {
 
 export const NavIcon = (props: NavIconProps) => {
     return (
-        <FontAwesomeIcon icon={props.isActive ? props.activeIcon : props.defaultIcon}
-                         className="size-10"
-                         onClick={() => {
-                             if (props.handleClick) props.handleClick(props.navName)
-                         }}
-        />
+        <button
+            type="button"
+            onClick={() => {
+                if (props.handleClick) props.handleClick(props.navName);
+            }}
+            className={`flex p-2 items-center justify-center rounded-md transition hover:bg-white/10  ${
+                props.isActive ?"bg-white/10   " : ""
+            }`}
+        >
+            <FontAwesomeIcon
+                icon={props.isActive ? props.activeIcon : props.defaultIcon}
+                className="size-6"
+            />
+        </button>
     );
 };
