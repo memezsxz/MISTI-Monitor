@@ -1,6 +1,3 @@
-import { partLinks, parts, sensorReadings } from "@/db/schema";
-import { desc } from "drizzle-orm";
-
 export type PartRow = {
     id: number | string;
     elementId: string;

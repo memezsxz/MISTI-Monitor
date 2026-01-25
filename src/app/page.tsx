@@ -4,6 +4,7 @@ import {NavigationPanel} from "@/components/NavigationPanel";
 import {FailureTreePanel} from "@/panels/FailureTreePanel";
 import {PumpPlanPanel} from "@/panels/PumpPlanPanel";
 import {useState} from "react";
+import clsx from "clsx";
 
 export default function Home() {
     const [currentNav, setCurrentNav] = useState<"" | "notifications" | "comments" | "notes" | "info">("");
@@ -22,8 +23,8 @@ export default function Home() {
                         selectedPartId={selectedPartId}
                     />
                     <main className="flex-1 flex py-10 pt-15 items-center justify-center transition-all duration-300 ease-out">
-                        <div className="w-full max-w-[70%] grid gap-3">
-                            <div className="flex justify-center pb-15">
+                        <div className={clsx("w-full grid gap-3", currentNav == "" ? "max-w-[70%]" : "max-w-[80%]")}>
+                            <div className="flex justify-center pb-10">
                                 <div className="inline-flex w-fit rounded-lg border border-white/10 bg-white/5 p-1 text-xs text-white/80">
                                 <button
                                     type="button"

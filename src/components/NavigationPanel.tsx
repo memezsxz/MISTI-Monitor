@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, JSX } from "react";
+import {JSX, useState} from "react";
 import {
     faBell as faBellRegular,
     faComment as faCommentRegular,
@@ -14,7 +14,6 @@ import {
     faInfo
 } from "@fortawesome/free-solid-svg-icons";
 import {NavIcon, NavIconProps} from "@/components/NavIcon";
-import {useState} from "react";
 import clsx from "clsx";
 import {NotificationsPanel} from "@/panels/NotificationsPanel";
 import {AIPanel} from "@/panels/AIPanel";
