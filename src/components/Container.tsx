@@ -1,7 +1,7 @@
 'use client'
-import {JSX} from "react";
+import {ReactNode} from "react";
 
-export const Container = ({children} : {children? : JSX.Element}) => {
+export const Container = ({children} : {children?: ReactNode}) => {
     return (
         <>
             <div
