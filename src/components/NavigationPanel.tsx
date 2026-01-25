@@ -82,15 +82,15 @@ export const NavigationPanel = ({
   const isOpen = currentNavSelectedNavOptions !== "";
 
   return (
-    <div className="fixed top-0 left-0 h-full flex z-10">
+    <div className="sticky top-0 h-screen flex self-stretch">
       {/* Sidebar with icons */}
 
-      <div 
-      className={clsx( 
-        "bg-zinc-800 w-16 h-full flex flex-col items-center justify-center gap-6", 
-        isOpen && "border-r border-black" 
-        )} 
-        > 
+      <div
+        className={clsx(
+          "bg-zinc-800 w-16 h-full flex flex-col items-center justify-center gap-6",
+          isOpen && "border-r border-black"
+        )}
+      >
         {NavItems.map((item) => ( 
             <NavIcon key={"nav" + item.navName} 
             {...item} 
