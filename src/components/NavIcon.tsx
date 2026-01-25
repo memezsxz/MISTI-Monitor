@@ -19,7 +19,7 @@ export const NavIcon = (props: NavIconProps) => {
                 if (props.handleClick) props.handleClick(props.navName);
             }}
             className={`flex p-2 items-center justify-center rounded-md transition hover:bg-white/10  ${
-                props.isActive ?"bg-white/10   " : ""
+                props.isActive ? "bg-white/10" : ""
             }`}
         >
             <FontAwesomeIcon

@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
+import {Container} from "@/components/Container";
 
 type TooltipInfo = {
     title: string;
@@ -11,6 +12,7 @@ type PartResponse = {
     part: {
         elementId: string;
         name: string | null;
+        type: string;
         description: unknown;
     };
     tooltip: TooltipInfo;
@@ -62,6 +64,8 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
     const title = data?.tooltip?.title ?? data?.part?.name ?? selectedPartId;
     const lines = data?.tooltip?.lines ?? ["No data available."];
     const description = data?.part?.description ?? null;
+    const partType = data?.part?.type;
+    const showChart = partType !== "connector" && partType !== "valve";
     const descriptionText =
         description == null
             ? "No description available."
@@ -88,6 +92,13 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
             <pre className="whitespace-pre-wrap rounded-lg bg-white/5 p-3 text-xs text-white/70">
                 {descriptionText}
             </pre>
+            {showChart ? (
+                <Container>
+                    <div className="flex min-h-[140px] items-center justify-center text-xs text-white/60">
+                        Chart placeholder
+                    </div>
+                </Container>
+            ) : null}
         </div>
     );
 };
