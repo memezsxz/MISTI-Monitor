@@ -2,28 +2,19 @@
 
 import {Container} from "@/components/Container";
 import {PumpPlanView} from "@/components/PumpPlan";
+import {RadialSimMenu} from "@/components/RadialSimMenu";
 
 export const PumpPlanPanel = ({onSelectPart}: { onSelectPart: (id: string) => void }) => {
     return (
         <div className="grid gap-3">
-            <Container>
-                <div className="flex flex-wrap gap-3">
-                    {[
-                        "Simulate Normal",
-                        "Simulate Blockage",
-                        "Simulate Leak",
-                        "Simulate Overheat",
-                    ].map((label) => (
-                        <button
-                            key={label}
-                            type="button"
-                            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white/80 hover:bg-white/10"
-                        >
-                            {label}
-                        </button>
-                    ))}
-                </div>
-            </Container>
+            <RadialSimMenu
+                options={[
+                    {id: "normal", label: "Normal"},
+                    {id: "blockage", label: "Blockage"},
+                    {id: "leak", label: "Leak"},
+                    {id: "overheat", label: "Overheat"},
+                ]}
+            />
 
             <Container>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
