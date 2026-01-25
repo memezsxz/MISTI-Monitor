@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Shift } from "@/db/schema/shifts";
 import type { TurnoverNote } from "@/db/schema/turnover_notes";
+import TextareaAutosize from 'react-textarea-autosize';
+
 
 async function apiJson<T>(url: string, init?: RequestInit): Promise<T> {
     const r = await fetch(url, {
@@ -269,18 +271,18 @@ export const TurnoverPanel = () => {
                                                 </div>
 
                                                 {editable ? (
-                                                    <textarea
-                                                        value={n.text}
-                                                        onChange={(e) => setLocalNoteText(shift.id, n.id, e.target.value)}
-                                                        onBlur={() => persistNote(shift.id, n.id).catch(console.error)}
-                                                        placeholder="Edit note…"
-                                                        className={[
-                                                            "w-full min-h-[48px] resize-none rounded-lg",
-                                                            "bg-zinc-950/40 border border-white/10",
-                                                            "px-3 py-2 text-sm text-white/90",
-                                                            "placeholder:text-white/30",
-                                                            "outline-none focus:ring-2 focus:ring-white/10",
-                                                        ].join(" ")}
+                                                    <TextareaAutosize 
+                                                    value={n.text} 
+                                                    onChange={(e) => setLocalNoteText(shift.id, n.id, e.target.value)}
+                                                    onBlur={() => persistNote(shift.id, n.id).catch(console.error)}
+                                                    placeholder="Edit note…"
+                                                    className={[
+                                                        "w-full resize-none rounded-lg",
+                                                        "bg-zinc-950/40 border border-white/10",
+                                                        "px-3 py-2 text-sm text-white/90",
+                                                        "placeholder:text-white/30",
+                                                        "outline-none focus:ring-2 focus:ring-white/10",
+                                                    ].join(" ")}
                                                     />
                                                 ) : (
                                                     <p>{n.text}</p>
@@ -299,24 +301,25 @@ export const TurnoverPanel = () => {
                                                     <div className="text-[11px] text-white/45">Draft</div>
                                                 </div>
 
-                                                <textarea
-                                                    value={draftText}
-                                                    onChange={(e) =>
-                                                        setDraftTextByShift((prev) => ({
-                                                            ...prev,
-                                                            [key]: e.target.value,
-                                                        }))
-                                                    }
-                                                    onBlur={() => createNote(shift.id).catch(console.error)}
-                                                    placeholder="Write a turnover note…"
-                                                    className={[
-                                                        "w-full min-h-[48px] resize-none rounded-lg",
-                                                        "bg-zinc-950/40 border border-white/10",
-                                                        "px-3 py-2 text-sm text-white/90",
-                                                        "placeholder:text-white/30",
-                                                        "outline-none focus:ring-2 focus:ring-white/10",
+                                                <TextareaAutosize
+                                                value={draftText}
+                                                onChange={(e) =>
+                                                    setDraftTextByShift((prev) => ({
+                                                        ...prev,
+                                                        [key]: e.target.value,
+                                                    }))
+                                                }
+                                                onBlur={() => createNote(shift.id).catch(console.error)}
+                                                placeholder="Write a turnover note…"
+                                                className={[
+                                                    "w-full resize-none rounded-lg",
+                                                    "bg-zinc-950/40 border border-white/10",
+                                                    "px-3 py-2 text-sm text-white/90",
+                                                    "placeholder:text-white/30",
+                                                    "outline-none focus:ring-2 focus:ring-white/10",
                                                     ].join(" ")}
-                                                />
+                                                    />
+
 
                                                 {draftText.trim().length === 0 && (
                                                     <div className="mt-2 text-[11px] text-white/40">
