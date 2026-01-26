@@ -8,7 +8,7 @@ export const sensorReadings = sqliteTable("sensor_readings", {
         .notNull()
         .references(() => parts.id, { onDelete: "cascade" }),
 
-    // TIMESTAMPTZ stored as ISO string in SQLite
+    // Local timestamp string (YYYY-MM-DD HH:MM:SS)
     ts: text("ts").notNull(),
 
     value: real("value").notNull(),

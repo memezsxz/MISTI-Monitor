@@ -15,41 +15,29 @@ type AIResponse = {
     bullets: string[];
 };
 
-function buildDemoAnswer(question: string): AIResponse {
-    const q = question.toLowerCase();
+function formatAnswer(answer: string): AIResponse {
+    const lines = answer
+        .split(/\r?\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
 
-    if (q.includes("flow")) {
+    if (!lines.length) {
         return {
-            title: "Here’s what I can help with",
-            bullets: [
-                "What the issue is (flow abnormality, drop, instability)",
-                "Why it is happening (blockage, cavitation, valve position, pump speed)",
-                "What sensors are involved (flow + temperature correlation)",
-                "Protocol (safety stop → isolate → verify valves → check supply → restart)",
-            ],
+            title: "AI Response",
+            bullets: ["No answer returned."],
         };
     }
 
-    if (q.includes("temperature") || q.includes("temp")) {
+    if (lines.length === 1) {
         return {
-            title: "Here’s what I can help with",
-            bullets: [
-                "What the issue is (temperature drift / overshoot)",
-                "Why it is happening (heater control, insulation, mixing, sensor placement)",
-                "What sensors are involved (temperature + flow cross-check)",
-                "Protocol (reduce heat → verify probe position → confirm setpoints)",
-            ],
+            title: "AI Response",
+            bullets: [lines[0]],
         };
     }
 
     return {
-        title: "Here’s what I can help with",
-        bullets: [
-            "What the issue is",
-            "Why it is happening",
-            "What sensors are involved",
-            "Protocol",
-        ],
+        title: lines[0],
+        bullets: lines.slice(1).map((line) => line.replace(/^-+\s*/, "")),
     };
 }
 
@@ -63,7 +51,12 @@ export const AIPanel = () => {
 
     const response: AIResponse | null = useMemo(() => {
         if (!lastQuestion) return null;
-        return lastAnswer ?? buildDemoAnswer(lastQuestion);
+        return (
+            lastAnswer ?? {
+                title: "AI Response",
+                bullets: ["Generating answer..."],
+            }
+        );
     }, [lastQuestion, lastAnswer]);
 
     async function submit() {
@@ -72,27 +65,27 @@ export const AIPanel = () => {
 
         setSaving(true);
         setLastQuestion(trimmed);
-
-        // demo answer for now (later you replace with real AI)
-        const demo = buildDemoAnswer(trimmed);
-        setLastAnswer(demo);
+        setLastAnswer(null);
         setInput("");
 
-        // Save Q/A to DB
         try {
             const res = await fetch("/api/ai-chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    question: trimmed,
-                    answer: [demo.title, ...demo.bullets.map((b) => `- ${b}`)].join("\n"),
-                }),
+                body: JSON.stringify({ question: trimmed }),
             });
 
             if (!res.ok) throw new Error(await res.text());
+            const data = (await res.json()) as { answer?: string };
+            const answerText = (data.answer ?? "").trim();
+            if (!answerText) throw new Error("Empty response from AI.");
+            setLastAnswer(formatAnswer(answerText));
         } catch (e) {
             console.error(e);
-            // keep UI response, just fail silently for now (or show a toast)
+            setLastAnswer({
+                title: "AI unavailable",
+                bullets: ["Unable to fetch a response right now. Please try again."],
+            });
         } finally {
             setSaving(false);
         }
@@ -101,11 +94,7 @@ export const AIPanel = () => {
     function selectFromHistory(row: AiChatRow) {
         setLastQuestion(row.question);
 
-        // If you saved answer as text, show it as bullets-like display:
-        const lines = row.answer.split("\n").map((l) => l.trim()).filter(Boolean);
-        const title = lines[0] ?? "AI Response";
-        const bullets = lines.slice(1).map((l) => l.replace(/^- /, ""));
-        setLastAnswer({ title, bullets });
+        setLastAnswer(formatAnswer(row.answer));
     }
 
     return (
