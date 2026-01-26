@@ -2,6 +2,7 @@
 
 import {useEffect, useState} from "react";
 import {Container} from "@/components/Container";
+import {getCacheWindowMs} from "@/lib/dataRefresh";
 
 type TooltipInfo = {
     title: string;
@@ -23,27 +24,37 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
     const [data, setData] = useState<PartResponse | null>(null);
 
     useEffect(() => {
-        if (!selectedPartId) return;
+        if (!selectedPartId) {
+            setData(null);
+            setError(null);
+            return;
+        }
 
         let active = true;
+        let intervalId: number | null = null;
 
-        fetch(`/api/parts/${selectedPartId}`, {cache: "no-store"})
-            .then(async (r) => {
-                if (!r.ok) throw new Error(await r.text());
-                return r.json();
-            })
-            .then((payload: PartResponse) => {
-                if (active) {
-                    setError(null);
-                    setData(payload);
-                }
-            })
-            .catch(() => {
-                if (active) setError("Could not load part details.");
-            });
+        const fetchPart = () =>
+            fetch(`/api/parts/${selectedPartId}`, {cache: "no-store"})
+                .then(async (r) => {
+                    if (!r.ok) throw new Error(await r.text());
+                    return r.json();
+                })
+                .then((payload: PartResponse) => {
+                    if (active) {
+                        setError(null);
+                        setData(payload);
+                    }
+                })
+                .catch(() => {
+                    if (active) setError("Could not load part details.");
+                });
+
+        fetchPart();
+        intervalId = window.setInterval(fetchPart, getCacheWindowMs());
 
         return () => {
             active = false;
+            if (intervalId != null) window.clearInterval(intervalId);
         };
     }, [selectedPartId]);
 

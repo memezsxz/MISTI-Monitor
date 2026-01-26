@@ -1,5 +1,6 @@
 "use client";
 import React, {useEffect, useRef, useState} from "react";
+import {getCacheWindowMs} from "@/lib/dataRefresh";
 
 type TooltipState = {
     open: boolean;
@@ -39,7 +40,8 @@ export function PumpPlanView({ onSelectPart }: { onSelectPart?: (id: string, inf
 
         const fetchData = async () => {
             const now = Date.now();
-            if (cacheRef.current && now - cacheRef.current.ts < 5000) {
+            const cacheWindow = getCacheWindowMs();
+            if (cacheRef.current && now - cacheRef.current.ts < cacheWindow) {
                 if (active) setInfoById(cacheRef.current.data);
                 return;
             }
@@ -58,7 +60,7 @@ export function PumpPlanView({ onSelectPart }: { onSelectPart?: (id: string, inf
         };
 
         fetchData();
-        const intervalId = window.setInterval(fetchData, 5000);
+        const intervalId = window.setInterval(fetchData, getCacheWindowMs());
 
         return () => {
             active = false;

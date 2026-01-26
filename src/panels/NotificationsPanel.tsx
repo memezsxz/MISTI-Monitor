@@ -9,13 +9,12 @@ import {
   faExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import clsx from "clsx";
+import { getCacheWindowMs } from "@/lib/dataRefresh";
 
 type NotificationPayload = {
   active: Notification[];
   history: Notification[];
 };
-
-const CACHE_WINDOW_MS = 5000;
 
 export const NotificationsPanel = () => {
   const [payload, setPayload] = useState<NotificationPayload>({ active: [], history: [] });
@@ -72,8 +71,9 @@ export const NotificationsPanel = () => {
   };
 
   const fetchNotifications = useCallback(async () => {
+    const cacheWindow = getCacheWindowMs();
     const now = Date.now();
-    if (cacheRef.current && now - cacheRef.current.ts < CACHE_WINDOW_MS) {
+    if (cacheRef.current && now - cacheRef.current.ts < cacheWindow) {
       setPayload(cacheRef.current.data);
       return;
     }
@@ -139,7 +139,7 @@ export const NotificationsPanel = () => {
     };
 
     fetchData();
-    const intervalId = window.setInterval(fetchData, CACHE_WINDOW_MS);
+    const intervalId = window.setInterval(fetchData, getCacheWindowMs());
 
     return () => {
       active = false;

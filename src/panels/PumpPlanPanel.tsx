@@ -8,6 +8,7 @@ export const PumpPlanPanel = ({onSelectPart}: { onSelectPart: (id: string) => vo
     return (
         <div className="grid gap-3">
             <RadialSimMenu
+                defaultScenarioId="normal"
                 options={[
                     {id: "normal", label: "Normal"},
                     {id: "blockage", label: "Blockage"},
