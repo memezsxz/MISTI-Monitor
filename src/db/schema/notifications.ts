@@ -10,6 +10,8 @@ export const notifications = sqliteTable("notifications", {
     message: text("message").notNull(),
 
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+    acknowledgedAt: text("acknowledged_at"),
+    resolvedAt: text("resolved_at"),
 });
 
 export type Notification = typeof notifications.$inferSelect;

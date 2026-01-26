@@ -8,6 +8,13 @@
       "when": 1769294160913,
       "tag": "0000_tidy_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1769429336199,
+      "tag": "0001_secret_rocket_raccoon",
+      "breakpoints": true
     }
   ]
 }

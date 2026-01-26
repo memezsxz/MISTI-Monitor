@@ -16,7 +16,10 @@ export async function GET() {
                 desc(notifications.createdAt),
             );
 
-        return NextResponse.json(rows);
+        const active = rows.filter((row) => row.resolvedAt == null);
+        const history = rows.filter((row) => row.resolvedAt != null);
+
+        return NextResponse.json({active, history});
     } catch (err) {
         console.error("GET /api/notifications failed:", err);
         return NextResponse.json(

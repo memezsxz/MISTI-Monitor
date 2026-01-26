@@ -223,7 +223,6 @@ async function seed_shifts_notes() {
     // end
 }
 
-
 async function seed_parts()  {
     const pipeLengthsMm: Record<string, number> = {
         pipe_1: 41.3,
