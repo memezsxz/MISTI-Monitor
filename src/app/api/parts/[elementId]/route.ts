@@ -4,7 +4,7 @@ export const runtime = "nodejs";
 
 import { db } from "@/db/db";
 import { partLinks, parts, sensorReadings } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { asc, and, desc, eq, gt } from "drizzle-orm";
 import { buildTooltipForPart, computePressures } from "@/lib/pumpPlanData";
 
 export async function GET(
@@ -61,7 +61,56 @@ export async function GET(
         const { pressureById, latestBySensor } = computePressures(partRows, partLinkRows, readings);
         const tooltip = buildTooltipForPart(part, pressureById, latestBySensor);
 
-        return NextResponse.json({ part, tooltip });
+        let history: { ts: string; value: number | null }[] = [];
+        if (part.type === "sensor") {
+            const bucketSizeMs = 10 * 60 * 1000;
+            const bucketCount = 12;
+            const nowMs = Date.now();
+            const alignedEndMs = Math.floor(nowMs / bucketSizeMs) * bucketSizeMs;
+            const startMs = alignedEndMs - bucketSizeMs * bucketCount;
+            const cutoff = new Date(startMs).toISOString();
+
+            const rawHistory = await db
+                .select({
+                    ts: sensorReadings.ts,
+                    value: sensorReadings.value,
+                })
+                .from(sensorReadings)
+                .where(
+                    and(
+                        eq(sensorReadings.sensorPartId, String(part.id)),
+                        gt(sensorReadings.ts, cutoff),
+                    ),
+                )
+                .orderBy(asc(sensorReadings.ts));
+
+            const parsed = rawHistory
+                .map((item) => ({
+                    ts: item.ts,
+                    ms: new Date(item.ts).getTime(),
+                    value: item.value,
+                }))
+                .filter((item) => Number.isFinite(item.ms) && Number.isFinite(item.value));
+
+            history = Array.from({ length: bucketCount }).map((_, idx) => {
+                const bucketStart = startMs + idx * bucketSizeMs;
+                const bucketEnd = bucketStart + bucketSizeMs;
+                const bucketValues = parsed.filter(
+                    (entry) => entry.ms >= bucketStart && entry.ms < bucketEnd,
+                );
+                const avg =
+                    bucketValues.length > 0
+                        ? bucketValues.reduce((sum, entry) => sum + entry.value, 0) /
+                          bucketValues.length
+                        : null;
+                return {
+                    ts: new Date(bucketEnd).toISOString(),
+                    value: avg,
+                };
+            });
+        }
+
+        return NextResponse.json({ part, tooltip, history });
     } catch (err) {
         console.error("GET /api/parts/[elementId] failed:", err);
         return NextResponse.json({ error: String(err) }, { status: 500 });

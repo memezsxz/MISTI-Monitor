@@ -1,8 +1,11 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Container} from "@/components/Container";
 import {getCacheWindowMs} from "@/lib/dataRefresh";
+import {Line} from "react-chartjs-2";
+import "chart.js/auto";
+import type {ChartOptions} from "chart.js";
 
 type TooltipInfo = {
     title: string;
@@ -17,6 +20,7 @@ type PartResponse = {
         description: unknown;
     };
     tooltip: TooltipInfo;
+    history: { ts: string; value: number | null }[];
 };
 
 export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) => {
@@ -58,7 +62,83 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
         };
     }, [selectedPartId]);
 
-    const style = "text-white/60 text-sm m-auto"
+    const title = data?.tooltip?.title ?? data?.part?.name ?? selectedPartId;
+    const lines = data?.tooltip?.lines ?? ["No data available."];
+    const description = data?.part?.description ?? null;
+    const partType = data?.part?.type;
+    const history = data?.history ?? [];
+    const showChart = partType === "sensor";
+
+    const parsedHistory = useMemo(
+        () =>
+            history.map((entry) => ({
+                ts: entry.ts,
+                label: new Date(entry.ts).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                }),
+                value: entry.value,
+            })),
+        [history],
+    );
+
+    const chartData = useMemo(() => {
+        if (!parsedHistory.length) return null;
+        const plottedValues = parsedHistory.map((p) =>
+            typeof p.value === "number" ? Number(p.value.toFixed(3)) : null,
+        );
+        if (plottedValues.every((v) => v == null)) return null;
+        return {
+            labels: parsedHistory.map((p) => p.label),
+            datasets: [
+                {
+                    label: "Sensor value",
+                    data: plottedValues,
+                    fill: false,
+                    borderColor: "rgba(16, 185, 129, 0.9)",
+                    backgroundColor: "rgba(16, 185, 129, 0.3)",
+                    tension: 0.3,
+                    pointRadius: 0,
+                    spanGaps: true,
+                },
+            ],
+        };
+    }, [parsedHistory]);
+
+    const numericValues = parsedHistory
+        .map((p) => p.value)
+        .filter((v): v is number => typeof v === "number");
+    const minValue = numericValues.length ? Math.min(...numericValues) : null;
+    const maxValue = numericValues.length ? Math.max(...numericValues) : null;
+
+    const chartOptions: ChartOptions<"line"> = useMemo(
+        () => ({
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: "index" },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `Value: ${context.parsed.y}`,
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#a1a1aa" },
+                    grid: { color: "rgba(255,255,255,0.08)" },
+                },
+                y: {
+                    ticks: { color: "#a1a1aa" },
+                    grid: { color: "rgba(255,255,255,0.08)" },
+                },
+            },
+        }),
+        [],
+    );
+
+    const style = "text-white/60 text-sm m-auto";
     if (!selectedPartId) {
         return <div className={style}>Select a part to view details.</div>;
     }
@@ -71,12 +151,6 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
     if (error) {
         return <div className="text-red-400 text-sm">{error}</div>;
     }
-
-    const title = data?.tooltip?.title ?? data?.part?.name ?? selectedPartId;
-    const lines = data?.tooltip?.lines ?? ["No data available."];
-    const description = data?.part?.description ?? null;
-    const partType = data?.part?.type;
-    const showChart = partType !== "connector" && partType !== "valve";
     const descriptionText =
         description == null
             ? "No description available."
@@ -105,9 +179,31 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
             </pre>
             {showChart ? (
                 <Container>
-                    <div className="flex min-h-[140px] items-center justify-center text-xs text-white/60">
-                        Chart placeholder
-                    </div>
+                    {chartData ? (
+                        <div className="space-y-2">
+                            <div className="h-40">
+                                <Line data={chartData} options={chartOptions} />
+                            </div>
+                            <div className="flex justify-between text-xs text-white/60">
+                                <span>
+                                    Min:{" "}
+                                    <span className="text-white/80">
+                                        {minValue != null ? minValue.toFixed(2) : "—"}
+                                    </span>
+                                </span>
+                                <span>
+                                    Max:{" "}
+                                    <span className="text-white/80">
+                                        {maxValue != null ? maxValue.toFixed(2) : "—"}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex min-h-[140px] items-center justify-center text-xs text-white/60">
+                            No readings in the past hour.
+                        </div>
+                    )}
                 </Container>
             ) : null}
         </div>
