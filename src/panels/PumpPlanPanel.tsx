@@ -1,10 +1,34 @@
 "use client";
 
+import {useCallback, useEffect} from "react";
 import {Container} from "@/components/Container";
 import {PumpPlanView} from "@/components/PumpPlan";
 import {RadialSimMenu} from "@/components/RadialSimMenu";
+import {getCacheWindowMs} from "@/lib/dataRefresh";
 
 export const PumpPlanPanel = ({onSelectPart}: { onSelectPart: (id: string) => void }) => {
+    const runAnalysis = useCallback(async () => {
+        try {
+            await fetch("/api/analysis/check", {method: "POST"});
+        } catch (err) {
+            console.error("AI analysis check failed", err);
+        }
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        runAnalysis().catch(() => undefined);
+        const intervalId = window.setInterval(() => {
+            if (cancelled) return;
+            runAnalysis().catch(() => undefined);
+        }, getCacheWindowMs());
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(intervalId);
+        };
+    }, [runAnalysis]);
+
     return (
         <div className="grid gap-3">
             <RadialSimMenu
@@ -14,7 +38,11 @@ export const PumpPlanPanel = ({onSelectPart}: { onSelectPart: (id: string) => vo
                     {id: "blockage", label: "Blockage"},
                     {id: "leak", label: "Leak"},
                     {id: "overheat", label: "Overheat"},
+                    {id: "pumpfail", label: "Pump Failure"},
                 ]}
+                onSelect={() => {
+                    runAnalysis().catch(() => undefined);
+                }}
             />
 
             <Container>

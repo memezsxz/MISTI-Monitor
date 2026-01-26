@@ -23,6 +23,7 @@ export const NotificationsPanel = () => {
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
 
   const cacheRef = useRef<{ data: NotificationPayload; ts: number } | null>(null);
+  const alarmActiveRef = useRef(false);
 
   // refs for tabs
   const activeRef = useRef<HTMLButtonElement | null>(null);
@@ -38,10 +39,20 @@ export const NotificationsPanel = () => {
   useEffect(() => {
     const initAudio = () => {
       audioRef.current = new Audio("/alert.mp3");
+      if (audioRef.current) {
+        audioRef.current.loop = true;
+      }
       document.removeEventListener("click", initAudio);
     };
     document.addEventListener("click", initAudio);
     return () => document.removeEventListener("click", initAudio);
+  }, []);
+
+  const stopAlarm = useCallback(() => {
+    if (!audioRef.current) return;
+    audioRef.current.pause();
+    audioRef.current.currentTime = 0;
+    alarmActiveRef.current = false;
   }, []);
 
   const getColor = (level: Notification["level"]) => {
@@ -99,9 +110,12 @@ export const NotificationsPanel = () => {
     async (id: number) => {
       try {
         await mutateNotification(id, "acknowledge");
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
+        const hasOtherHighUnacknowledged = payload.active.some(
+          (notification) =>
+            notification.level === "high" && !notification.acknowledgedAt && notification.id !== id,
+        );
+        if (!hasOtherHighUnacknowledged) {
+          stopAlarm();
         }
         setError(null);
       } catch (err) {
@@ -109,7 +123,7 @@ export const NotificationsPanel = () => {
         setError("Failed to acknowledge the notification.");
       }
     },
-    [mutateNotification],
+    [mutateNotification, payload.active, stopAlarm],
   );
 
   const resolveNotification = useCallback(
@@ -160,6 +174,32 @@ export const NotificationsPanel = () => {
   useLayoutEffect(() => {
     refreshUnderline();
   }, [refreshUnderline]);
+
+  useEffect(() => {
+    const hasHighUnacknowledged = payload.active.some(
+      (notification) => notification.level === "high" && !notification.acknowledgedAt,
+    );
+
+    if (hasHighUnacknowledged && audioRef.current && !alarmActiveRef.current) {
+      const playPromise = audioRef.current.play();
+      if (playPromise) {
+        playPromise
+          .then(() => {
+            alarmActiveRef.current = true;
+          })
+          .catch((err) => {
+            alarmActiveRef.current = false;
+            console.error("Failed to play alarm sound", err);
+          });
+      } else {
+        alarmActiveRef.current = true;
+      }
+    }
+
+    if (!hasHighUnacknowledged && alarmActiveRef.current) {
+      stopAlarm();
+    }
+  }, [payload.active, stopAlarm]);
 
   useEffect(() => {
     const wrap = tabsWrapRef.current;
