@@ -1,6 +1,6 @@
 'use client'
 
-import {JSX, useState} from "react";
+import {JSX, useEffect, useState} from "react";
 import {
     faBell as faBellRegular,
     faComment as faCommentRegular,
@@ -79,6 +79,14 @@ export const NavigationPanel = ({
   };
 
   const isOpen = currentNavSelectedNavOptions !== "";
+
+  useEffect(() => {
+    if (isOpen) return;
+    const active = document.activeElement;
+    if (active instanceof HTMLElement) {
+      active.blur();
+    }
+  }, [isOpen]);
 
   return (
     <div className="sticky top-0 h-screen flex self-stretch">

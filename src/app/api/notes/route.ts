@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
 import { db } from "@/db/db";
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
             .select()
             .from(turnoverNotes)
             .where(whereClause)
-            .orderBy(desc(turnoverNotes.createdAt))
+            .orderBy(turnoverNotes.createdAt)
             .limit(pageSize)
             .offset(offset);
 
