@@ -11,10 +11,10 @@ const elementToSampleKey: Record<string, keyof PumpPredictionSample> = {
     sensor_1: "flow_1",
     sensor_2: "temp_1",
     sensor_3: "flow_2",
-    sensor_4: "temp_2",
-    sensor_5: "temp_3",
+    // sensor_4: "temp_2",
+    // sensor_5: "temp_3",
     sensor_6: "flow_3",
-    sensor_7: "temp_4",
+    // sensor_7: "temp_4",
     sensor_8: "flow_4",
 };
 

@@ -17,6 +17,7 @@ import {inArray} from "drizzle-orm";
 import {turnoverNotes} from "@/db/schema/turnover_notes";
 import {NewShift, shifts} from "@/db/schema/shifts";
 import {createHash} from "node:crypto";
+import {formatLocalDate, formatLocalDateTime} from "@/lib/localDate";
 
 function uuidFromString(input: string): string {
     const hex = createHash("sha1").update(input).digest("hex").slice(0, 32).split("");
@@ -174,14 +175,14 @@ async function seed_shifts_notes() {
         .values([
             {
                 userId: maryamId,
-                startedAt: today7am.toISOString(),
+                startedAt: formatLocalDateTime(today7am),
                 endedAt: null, // active shift
                 note: null,
             },
             {
                 userId: manalId,
-                startedAt: yesterday7pm.toISOString(),
-                endedAt: yesterday1159.toISOString(), // closed shift
+                startedAt: formatLocalDateTime(yesterday7pm),
+                endedAt: formatLocalDateTime(yesterday1159), // closed shift
                 note: "Handover: heater stable; monitor temperature drift.",
             },
         ] as NewShift[])
@@ -277,11 +278,11 @@ async function seed_parts()  {
         sensor_8: "flow",
     };
 
-    const baseDate = new Date(Date.UTC(2025, 0, 15));
+    const baseDate = new Date(2025, 0, 15);
     const dateForIndex = (index: number, offset = 0) => {
         const d = new Date(baseDate);
-        d.setUTCDate(d.getUTCDate() + ((index + offset) % 6));
-        return d.toISOString().slice(0, 10);
+        d.setDate(d.getDate() + ((index + offset) % 6));
+        return formatLocalDate(d);
     };
 
     const describePart = (part: NewPart, index: number): PartDescription => {
@@ -620,7 +621,7 @@ async function seed_sensor_readings() {
             readings.push({
                 id: uuidFromString(`sensor_reading:${sensorId}:${idx}`),
                 sensorPartId: String(partId),
-                ts: ts.toISOString(),
+                ts: formatLocalDateTime(ts),
                 value: base + idx * 0.1,
             });
         });

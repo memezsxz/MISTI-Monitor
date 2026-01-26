@@ -3,14 +3,14 @@ import { randomUUID } from "node:crypto";
 
 import { db } from "@/db/db";
 import { parts, sensorReadings } from "@/db/schema";
-import type { PumpCondition } from "@/lib/aiAnalize";
-import { analyzePumpSample } from "@/lib/aiAnalize";
+import { analyzePumpSample, type PumpCondition, type PumpPredictionSample } from "@/lib/aiAnalize";
 import {
     getRangesForCondition,
     type SensorKey,
     type SensorRange,
 } from "@/lib/aiScenarioRanges";
 import { inArray } from "drizzle-orm";
+import { formatLocalDateTime } from "@/lib/localDate";
 
 const scenarioMap: Record<string, PumpCondition> = {
     normal: "normal",
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
             return {
                 id: randomUUID(),
                 sensorPartId: String(partId),
-                ts: new Date(now + idx * 1000).toISOString(),
+                ts: formatLocalDateTime(now + idx * 1000),
                 value,
             };
         });

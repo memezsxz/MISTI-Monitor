@@ -6,6 +6,7 @@ import { db } from "@/db/db";
 import { partLinks, parts, sensorReadings } from "@/db/schema";
 import { asc, and, desc, eq, gt } from "drizzle-orm";
 import { buildTooltipForPart, computePressures } from "@/lib/pumpPlanData";
+import { formatLocalDateTime } from "@/lib/localDate";
 
 export async function GET(
     req: Request,
@@ -68,7 +69,7 @@ export async function GET(
             const nowMs = Date.now();
             const alignedEndMs = Math.floor(nowMs / bucketSizeMs) * bucketSizeMs;
             const startMs = alignedEndMs - bucketSizeMs * bucketCount;
-            const cutoff = new Date(startMs).toISOString();
+            const cutoff = formatLocalDateTime(startMs);
 
             const rawHistory = await db
                 .select({
@@ -104,7 +105,7 @@ export async function GET(
                           bucketValues.length
                         : null;
                 return {
-                    ts: new Date(bucketEnd).toISOString(),
+                    ts: formatLocalDateTime(bucketEnd),
                     value: avg,
                 };
             });
