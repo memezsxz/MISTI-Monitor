@@ -34,6 +34,7 @@ export interface FailureTreeNodePayload {
     name: string;
     kind: FailureEventRecordKind;
     description: string | null;
+    sourceEventId?: string;
     probability: number | null;
     severity: FailureEventSeverity | null;
     detection: FailureEventDetection | null;

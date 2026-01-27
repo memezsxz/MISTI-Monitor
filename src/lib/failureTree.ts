@@ -113,6 +113,7 @@ function layoutNodes(nodes: FailureEventRow[], edges: FailureEventLinkRow[]): Po
 function serializeNode(node: PositionedFailureNode): FailureTreeNodePayload {
     return {
         id: node.id,
+        sourceEventId: node.id,
         name: node.name,
         kind: node.kind,
         description: node.description ?? null,

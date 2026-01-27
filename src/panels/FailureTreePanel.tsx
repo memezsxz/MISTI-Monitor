@@ -29,13 +29,6 @@ const NON_GATE_VARIANTS: Partial<Record<FailureTreeNodePayload["kind"], FailureE
     failure_mode: "failureMode",
 };
 
-interface LayoutMetrics {
-    width: number;
-    height: number;
-    offsetX: number;
-    offsetY: number;
-}
-
 const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent}) => JSX.Element> = {
     basic: ({event}) => <BasicEventCard event={event} />,
     failureMode: ({event}) => <FailureModeCard event={event} />,
@@ -43,27 +36,10 @@ const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent
     top: ({event}) => <TopEventCard event={event} highlight />,
 };
 
-const computeLayout = (nodes: FailureTreeNodePayload[]): LayoutMetrics | null => {
-    if (nodes.length === 0) return null;
-    const xs = nodes.map((node) => node.position.x);
-    const ys = nodes.map((node) => node.position.y);
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
+const H_SPACING = 220;
+const V_SPACING = 170;
 
-    const paddingX = 160;
-    const paddingY = 140;
-    const width = Math.max(maxX - minX, 0) + paddingX * 2;
-    const height = Math.max(maxY - minY, 0) + paddingY * 2;
-
-    return {
-        width,
-        height: Math.max(height, 320),
-        offsetX: paddingX - minX,
-        offsetY: paddingY - minY,
-    };
-};
+type ViewMode = "tree" | "graph";
 
 const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVariant): FailureEvent => {
     const probability = node.probability ?? undefined;
@@ -71,7 +47,7 @@ const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVaria
     const detection = node.detection ?? undefined;
     const hasMetrics = probability !== undefined || severity !== undefined || detection !== undefined;
     return {
-        id: node.id,
+        id: node.sourceEventId ?? node.id,
         name: node.name,
         kind: variant,
         description: node.description ?? undefined,
@@ -81,232 +57,148 @@ const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVaria
     };
 };
 
-const TREE_NODE_SPACING = 240;
-const TREE_LEVEL_SPACING = 200;
-type ViewMode = "tree" | "graph";
-
-interface CloneQueueEntry {
-    originalId: string;
-    parentRenderId: string | null;
-    incomingEdge?: FailureTreeEdgePayload;
+interface RenderTreeNode {
+    renderId: string;
+    sourceId: string;
+    payload: FailureTreeNodePayload;
+    children: RenderTreeChild[];
 }
 
-const applyTreeLayout = (
-    nodes: FailureTreeNodePayload[],
-    edges: FailureTreeEdgePayload[],
-): FailureTreeNodePayload[] => {
-    if (nodes.length === 0) return nodes;x
+interface RenderTreeChild {
+    edge: FailureTreeEdgePayload;
+    node: RenderTreeNode;
+}
 
-    const incomingCount = new Map<string, number>();
-    const childrenMap = new Map<string, string[]>();
-
-    nodes.forEach((node) => {
-        incomingCount.set(node.id, 0);
-        childrenMap.set(node.id, []);
-    });
-
-    edges.forEach((edge) => {
-        if (!incomingCount.has(edge.toEventId)) {
-            incomingCount.set(edge.toEventId, 0);
-        }
-        incomingCount.set(edge.toEventId, (incomingCount.get(edge.toEventId) ?? 0) + 1);
-        const list = childrenMap.get(edge.fromEventId);
-        if (list) {
-            list.push(edge.toEventId);
-        }
-    });
-
-    const levelMap = new Map<string, number>();
-    const queue: string[] = [];
-
-    nodes.forEach((node) => {
-        if ((incomingCount.get(node.id) ?? 0) === 0) {
-            queue.push(node.id);
-            levelMap.set(node.id, 0);
-        }
-    });
-
-    while (queue.length > 0) {
-        const currentId = queue.shift()!;
-        const currentLevel = levelMap.get(currentId) ?? 0;
-        const children = childrenMap.get(currentId) ?? [];
-
-        for (const childId of children) {
-            const nextLevel = currentLevel + 1;
-            if (!levelMap.has(childId) || (levelMap.get(childId) ?? 0) < nextLevel) {
-                levelMap.set(childId, nextLevel);
-            }
-            const updatedIncoming = (incomingCount.get(childId) ?? 0) - 1;
-            incomingCount.set(childId, updatedIncoming);
-            if (updatedIncoming === 0) {
-                queue.push(childId);
-            }
-        }
-    }
-
-    nodes.forEach((node) => {
-        if (!levelMap.has(node.id)) {
-            levelMap.set(node.id, 0);
-        }
-    });
-
-    const levels = new Map<number, FailureTreeNodePayload[]>();
-    nodes.forEach((node) => {
-        const level = levelMap.get(node.id) ?? 0;
-        const bucket = levels.get(level);
-        if (bucket) {
-            bucket.push(node);
-        } else {
-            levels.set(level, [node]);
-        }
-    });
-
-    const result: FailureTreeNodePayload[] = [];
-    const sortedLevels = Array.from(levels.entries()).sort(([a], [b]) => a - b);
-
-    for (const [level, list] of sortedLevels) {
-        list.sort((a, b) => a.name.localeCompare(b.name));
-        const totalWidth = (list.length - 1) * TREE_NODE_SPACING;
-        list.forEach((node, index) => {
-            result.push({
-                ...node,
-                position: {
-                    x: index * TREE_NODE_SPACING - totalWidth / 2,
-                    y: level * TREE_LEVEL_SPACING,
-                },
-            });
-        });
-    }
-
-    return result;
-};
-
-const buildTreeViewData = (data: FailureTreeData | null): FailureTreeData | null => {
+const buildDuplicatedTreeLayout = (data: FailureTreeData | null): FailureTreeData | null => {
     if (!data || data.nodes.length === 0) return data;
 
     const nodeMap = new Map(data.nodes.map((node) => [node.id, node]));
-    const parentCount = new Map<string, number>();
-    const childrenMap = new Map<string, FailureTreeEdgePayload[]>();
+    const adjacency = new Map<string, FailureTreeEdgePayload[]>();
+    const incoming = new Map<string, number>();
 
     data.nodes.forEach((node) => {
-        parentCount.set(node.id, 0);
-        childrenMap.set(node.id, []);
+        adjacency.set(node.id, []);
+        incoming.set(node.id, 0);
     });
 
     data.edges.forEach((edge) => {
-        parentCount.set(edge.toEventId, (parentCount.get(edge.toEventId) ?? 0) + 1);
-        const list = childrenMap.get(edge.fromEventId);
-        if (list) {
-            list.push(edge);
+        const bucket = adjacency.get(edge.fromEventId);
+        if (bucket) {
+            bucket.push(edge);
         } else {
-            childrenMap.set(edge.fromEventId, [edge]);
+            adjacency.set(edge.fromEventId, [edge]);
         }
+        incoming.set(edge.toEventId, (incoming.get(edge.toEventId) ?? 0) + 1);
     });
 
-    let roots = data.nodes.filter((node) => (parentCount.get(node.id) ?? 0) === 0);
-    if (roots.length === 0) {
-        roots = [...data.nodes];
-    }
-    roots.sort((a, b) => a.name.localeCompare(b.name));
+    const roots = data.nodes.filter((node) => (incoming.get(node.id) ?? 0) === 0);
+    const orderedRoots = (roots.length > 0 ? roots : data.nodes).sort((a, b) => a.name.localeCompare(b.name));
 
-    const queue: CloneQueueEntry[] = roots.map((root) => ({
-        originalId: root.id,
-        parentRenderId: null,
-    }));
+    let cloneCounter = 0;
+    const forest: RenderTreeNode[] = [];
 
-    const renderNodes: FailureTreeNodePayload[] = [];
-    const renderEdges: FailureTreeEdgePayload[] = [];
-    const renderedIds = new Set<string>();
-    const canonicalIdMap = new Map<string, string>();
-    const cloneCounter = new Map<string, number>();
-    const edgeCloneCounter = new Map<string, number>();
-    const touchedOriginals = new Set<string>();
-    let syntheticEdgeCounter = 0;
-
-    const ensureNodeClone = (renderId: string, original: FailureTreeNodePayload) => {
-        touchedOriginals.add(original.id);
-        if (renderedIds.has(renderId)) return;
-        renderNodes.push({
-            ...original,
+    const buildNode = (eventId: string, ancestors: Set<string>): RenderTreeNode | null => {
+        const base = nodeMap.get(eventId);
+        if (!base) return null;
+        const renderId = `${eventId}__tree_${cloneCounter++}`;
+        const payload: FailureTreeNodePayload = {
+            ...base,
             id: renderId,
+            sourceEventId: base.sourceEventId ?? base.id,
             position: {x: 0, y: 0},
-        });
-        renderedIds.add(renderId);
+        };
+        const nextAncestors = new Set(ancestors);
+        nextAncestors.add(eventId);
+        const children = (adjacency.get(eventId) ?? [])
+            .map((edge) => {
+                if (nextAncestors.has(edge.toEventId)) {
+                    return null;
+                }
+                const child = buildNode(edge.toEventId, nextAncestors);
+                return child ? {edge, node: child} : null;
+            })
+            .filter(Boolean) as RenderTreeChild[];
+        return {
+            renderId,
+            sourceId: base.id,
+            payload,
+            children,
+        };
     };
 
-    const makeDuplicateId = (originalId: string) => {
-        const count = (cloneCounter.get(originalId) ?? 0) + 1;
-        cloneCounter.set(originalId, count);
-        return `${originalId}__dup_${count}`;
-    };
-
-    const createEdgeId = (edge?: FailureTreeEdgePayload) => {
-        if (!edge) {
-            syntheticEdgeCounter += 1;
-            return `synthetic_edge_${syntheticEdgeCounter}`;
-        }
-        const count = (edgeCloneCounter.get(edge.id) ?? 0) + 1;
-        edgeCloneCounter.set(edge.id, count);
-        return count === 1 ? edge.id : `${edge.id}__dup_${count}`;
-    };
-
-    while (queue.length > 0) {
-        const entry = queue.shift()!;
-        const baseNode = nodeMap.get(entry.originalId);
-        if (!baseNode) {
-            continue;
-        }
-
-        const parents = parentCount.get(entry.originalId) ?? 0;
-        const needsDuplication = parents > 1 && entry.parentRenderId !== null;
-
-        let renderId: string;
-        if (needsDuplication) {
-            renderId = makeDuplicateId(entry.originalId);
-            ensureNodeClone(renderId, baseNode);
-        } else {
-            const existing = canonicalIdMap.get(entry.originalId);
-            if (existing) {
-                renderId = existing;
-                ensureNodeClone(renderId, baseNode);
-            } else {
-                renderId = entry.originalId;
-                canonicalIdMap.set(entry.originalId, renderId);
-                ensureNodeClone(renderId, baseNode);
-            }
-        }
-
-        if (entry.parentRenderId && entry.incomingEdge) {
-            renderEdges.push({
-                id: createEdgeId(entry.incomingEdge),
-                fromEventId: entry.parentRenderId,
-                toEventId: renderId,
-                linkType: entry.incomingEdge.linkType ?? null,
-                metadata: entry.incomingEdge.metadata ?? null,
-            });
-        }
-
-        const childEdges = childrenMap.get(entry.originalId) ?? [];
-        childEdges.forEach((childEdge) => {
-            queue.push({
-                originalId: childEdge.toEventId,
-                parentRenderId: renderId,
-                incomingEdge: childEdge,
-            });
-        });
-    }
-
-    data.nodes.forEach((node) => {
-        if (!touchedOriginals.has(node.id)) {
-            ensureNodeClone(node.id, node);
+    orderedRoots.forEach((root) => {
+        const tree = buildNode(root.id, new Set());
+        if (tree) {
+            forest.push(tree);
         }
     });
 
-    const laidOutNodes = applyTreeLayout(renderNodes, renderEdges);
+    const positionedNodes: FailureTreeNodePayload[] = [];
+    const positionedEdges: FailureTreeEdgePayload[] = [];
+    let currentX = 0;
 
+    const place = (treeNode: RenderTreeNode, depth: number): number => {
+        const childXs: number[] = [];
+        treeNode.children.forEach((child) => {
+            const childX = place(child.node, depth + 1);
+            childXs.push(childX);
+            positionedEdges.push({
+                id: `${treeNode.renderId}->${child.node.renderId}`,
+                fromEventId: treeNode.renderId,
+                toEventId: child.node.renderId,
+                linkType: child.edge.linkType,
+                metadata: child.edge.metadata,
+            });
+        });
+
+        let x: number;
+        if (childXs.length === 0) {
+            x = currentX;
+            currentX += H_SPACING;
+        } else {
+            const min = Math.min(...childXs);
+            const max = Math.max(...childXs);
+            x = min + (max - min) / 2;
+        }
+
+        positionedNodes.push({
+            ...treeNode.payload,
+            position: {x, y: depth * V_SPACING},
+        });
+
+        return x;
+    };
+
+    forest.forEach((tree) => {
+        place(tree, 0);
+        currentX += H_SPACING;
+    });
+
+    if (positionedNodes.length === 0) {
+        return {nodes: [], edges: []};
+    }
+
+    const minX = Math.min(...positionedNodes.map((node) => node.position.x));
+    if (Number.isFinite(minX)) {
+        positionedNodes.forEach((node) => {
+            node.position = {x: node.position.x - minX + H_SPACING, y: node.position.y};
+        });
+    }
+
+    return {nodes: positionedNodes, edges: positionedEdges};
+};
+
+const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; height: number} | null => {
+    if (nodes.length === 0) return null;
+    const xs = nodes.map((node) => node.position.x);
+    const ys = nodes.map((node) => node.position.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
     return {
-        nodes: laidOutNodes,
-        edges: renderEdges,
+        width: Math.max(320, maxX - minX + H_SPACING * 2),
+        height: Math.max(320, maxY - minY + V_SPACING * 2),
     };
 };
 
@@ -324,9 +216,7 @@ export const FailureTreePanel = () => {
             setError(null);
             try {
                 const res = await fetch(DATA_URL, {method: "GET", cache: "no-store"});
-                if (!res.ok) {
-                    throw new Error(`Request failed with status ${res.status}`);
-                }
+                if (!res.ok) throw new Error(`Request failed with status ${res.status}`);
                 const payload = (await res.json()) as FailureTreeData;
                 if (!active) return;
                 setData(payload);
@@ -335,45 +225,38 @@ export const FailureTreePanel = () => {
                 setError(err instanceof Error ? err.message : "Failed to load failure tree");
                 setData(null);
             } finally {
-                if (active) {
-                    setLoading(false);
-                }
+                if (active) setLoading(false);
             }
         };
-
         void load();
         return () => {
             active = false;
         };
     }, []);
 
-    const viewData = useMemo(() => {
+    const renderData = useMemo(() => {
         if (!data) return null;
-        return viewMode === "tree" ? buildTreeViewData(data) : data;
+        return viewMode === "tree" ? buildDuplicatedTreeLayout(data) : data;
     }, [data, viewMode]);
 
-    const layout = useMemo(() => computeLayout(viewData?.nodes ?? []), [viewData]);
+    const layoutBounds = useMemo(() => computeLayoutBounds(renderData?.nodes ?? []), [renderData]);
 
     const edges: TreeEdge[] = useMemo(() => {
-        if (!viewData) return [];
-        return viewData.edges.map((edge) => ({
-            from: edge.fromEventId,
-            to: edge.toEventId,
-        }));
-    }, [viewData]);
+        if (!renderData) return [];
+        return renderData.edges.map((edge) => ({from: edge.fromEventId, to: edge.toEventId}));
+    }, [renderData]);
 
     const nodes = useMemo(() => {
-        if (!viewData || !layout) return [];
-        return viewData.nodes.map((node) => {
+        if (!renderData) return [];
+        return renderData.nodes.map((node) => {
             const variant = NON_GATE_VARIANTS[node.kind];
             const gateType = node.kind === "gate_and" ? "and" : node.kind === "gate_or" ? "or" : null;
             const style = {
                 position: "absolute" as const,
-                left: layout.offsetX + node.position.x,
-                top: layout.offsetY + node.position.y,
-                transform: "translateX(-50%)",
+                left: node.position.x,
+                top: node.position.y,
+                transform: "translate(-50%, 0)",
             };
-
             let content: JSX.Element | null = null;
             if (gateType === "and") {
                 content = <AndGate />;
@@ -384,26 +267,25 @@ export const FailureTreePanel = () => {
                 const Component = EVENT_COMPONENTS[variant];
                 content = <Component event={event} />;
             }
-
             return (
                 <TreeNode key={node.id} id={node.id} className="absolute z-10" style={style}>
                     {content}
                 </TreeNode>
             );
         });
-    }, [viewData, layout]);
+    }, [renderData]);
 
-    const viewDescription =
+    const description =
         viewMode === "tree"
-            ? "Tree view duplicates shared events for each branch to eliminate connector crossovers."
-            : "Graph view shows each event once, preserving shared connections even if lines overlap.";
+            ? "Tree view duplicates intermediate branches per parent, so every child sits directly beneath its parent with no crossed lines."
+            : "Graph view renders each event once (shared leaves included), which can create crossing lines but preserves the raw DAG.";
 
     return (
         <Container>
             <NodeRegistryProvider>
                 <div className="relative flex w-full flex-col gap-4 text-white/80">
                     <div className="flex flex-col gap-2 text-sm text-white/60 lg:flex-row lg:items-center lg:justify-between">
-                        <p>{viewDescription}</p>
+                        <p>{description}</p>
                         <div className="flex gap-2 text-xs">
                             {([
                                 {mode: "tree" as ViewMode, label: "Tree View"},
@@ -425,17 +307,18 @@ export const FailureTreePanel = () => {
                             ))}
                         </div>
                     </div>
+
                     <div className="relative w-full overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
                         <div
                             ref={containerRef}
                             className="relative mx-auto"
                             style={
-                                layout
-                                    ? {width: `${layout.width}px`, height: `${layout.height}px`}
+                                layoutBounds
+                                    ? {width: `${layoutBounds.width}px`, height: `${layoutBounds.height}px`}
                                     : {minHeight: "320px"}
                             }
                         >
-                            {layout && <ConnectorLayer containerRef={containerRef} edges={edges} />}
+                            {layoutBounds && <ConnectorLayer containerRef={containerRef} edges={edges} />}
                             {nodes}
                             {loading && (
                                 <div className="absolute left-4 top-4 rounded-md bg-zinc-900/80 px-3 py-2 text-xs text-white/70">
