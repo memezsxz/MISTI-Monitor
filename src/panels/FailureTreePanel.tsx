@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Container} from "@/components/Container";
 import {
     BasicEventCard,
@@ -66,8 +66,8 @@ interface RenderTreeChild {
     node: RenderTreeNode;
 }
 
-const buildDuplicatedTreeLayout = (data: FailureTreeData | null): FailureTreeData | null => {
-    if (!data || data.nodes.length === 0) return data;
+const buildRenderForest = (data: FailureTreeData | null): RenderTreeNode[] => {
+    if (!data || data.nodes.length === 0) return [];
 
     const nodeMap = new Map(data.nodes.map((node) => [node.id, node]));
     const adjacency = new Map<string, FailureTreeEdgePayload[]>();
@@ -130,23 +130,39 @@ const buildDuplicatedTreeLayout = (data: FailureTreeData | null): FailureTreeDat
         }
     });
 
+    return forest;
+};
+
+const layoutForest = (forest: RenderTreeNode[], collapsed: Set<string>): PositionedTreeResult | null => {
+    if (forest.length === 0) return null;
+
     const positionedNodes: FailureTreeNodePayload[] = [];
     const positionedEdges: FailureTreeEdgePayload[] = [];
+    const childMap = new Map<string, boolean>();
     let currentX = 0;
 
     const place = (treeNode: RenderTreeNode, depth: number): number => {
         const childXs: number[] = [];
-        treeNode.children.forEach((child) => {
-            const childX = place(child.node, depth + 1);
-            childXs.push(childX);
-            positionedEdges.push({
-                id: `${treeNode.renderId}->${child.node.renderId}`,
-                fromEventId: treeNode.renderId,
-                toEventId: child.node.renderId,
-                linkType: child.edge.linkType,
-                metadata: child.edge.metadata,
+        const hasChildren = treeNode.children.length > 0;
+        const isCollapsed = collapsed.has(treeNode.renderId);
+
+        if (hasChildren) {
+            childMap.set(treeNode.renderId, true);
+        }
+
+        if (hasChildren && !isCollapsed) {
+            treeNode.children.forEach((child) => {
+                const childX = place(child.node, depth + 1);
+                childXs.push(childX);
+                positionedEdges.push({
+                    id: `${treeNode.renderId}->${child.node.renderId}`,
+                    fromEventId: treeNode.renderId,
+                    toEventId: child.node.renderId,
+                    linkType: child.edge.linkType,
+                    metadata: child.edge.metadata,
+                });
             });
-        });
+        }
 
         let x: number;
         if (childXs.length === 0) {
@@ -172,7 +188,7 @@ const buildDuplicatedTreeLayout = (data: FailureTreeData | null): FailureTreeDat
     });
 
     if (positionedNodes.length === 0) {
-        return {nodes: [], edges: []};
+        return {nodes: [], edges: [], childMap};
     }
 
     const minX = Math.min(...positionedNodes.map((node) => node.position.x));
@@ -182,7 +198,7 @@ const buildDuplicatedTreeLayout = (data: FailureTreeData | null): FailureTreeDat
         });
     }
 
-    return {nodes: positionedNodes, edges: positionedEdges};
+    return {nodes: positionedNodes, edges: positionedEdges, childMap};
 };
 
 const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; height: number} | null => {
@@ -202,6 +218,7 @@ const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; h
 export const FailureTreePanel = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [data, setData] = useState<FailureTreeData | null>(null);
+    const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -230,18 +247,39 @@ export const FailureTreePanel = () => {
         };
     }, []);
 
-    const renderData = useMemo(() => buildDuplicatedTreeLayout(data), [data]);
+    useEffect(() => {
+        setCollapsed(new Set());
+    }, [data]);
 
-    const layoutBounds = useMemo(() => computeLayoutBounds(renderData?.nodes ?? []), [renderData]);
+    const forest = useMemo(() => buildRenderForest(data), [data]);
+    const layoutResult = useMemo(() => layoutForest(forest, collapsed), [forest, collapsed]);
+
+    const layoutBounds = useMemo(
+        () => computeLayoutBounds(layoutResult?.nodes ?? []),
+        [layoutResult],
+    );
 
     const edges: TreeEdge[] = useMemo(() => {
-        if (!renderData) return [];
-        return renderData.edges.map((edge) => ({from: edge.fromEventId, to: edge.toEventId}));
-    }, [renderData]);
+        if (!layoutResult) return [];
+        return layoutResult.edges.map((edge) => ({from: edge.fromEventId, to: edge.toEventId}));
+    }, [layoutResult]);
+
+    const toggleCollapse = useCallback((renderId: string) => {
+        setCollapsed((prev) => {
+            const next = new Set(prev);
+            if (next.has(renderId)) {
+                next.delete(renderId);
+            } else {
+                next.add(renderId);
+            }
+            return next;
+        });
+    }, []);
 
     const nodes = useMemo(() => {
-        if (!renderData) return [];
-        return renderData.nodes.map((node) => {
+        if (!layoutResult) return [];
+        const childMap = layoutResult.childMap;
+        return layoutResult.nodes.map((node) => {
             const variant = NON_GATE_VARIANTS[node.kind];
             const gateType = node.kind === "gate_and" ? "and" : node.kind === "gate_or" ? "or" : null;
             const style = {
@@ -260,13 +298,28 @@ export const FailureTreePanel = () => {
                 const Component = EVENT_COMPONENTS[variant];
                 content = <Component event={event} />;
             }
+            const canCollapse = childMap.has(node.id);
+            const isCollapsed = collapsed.has(node.id);
+
             return (
                 <TreeNode key={node.id} id={node.id} className="absolute z-10" style={style}>
-                    {content}
+                    <div className="relative">
+                        {content}
+                        {canCollapse && node.kind !== "gate_and" && node.kind !== "gate_or" && (
+                            <button
+                                type="button"
+                                aria-label={isCollapsed ? "Expand branch" : "Collapse branch"}
+                                onClick={() => toggleCollapse(node.id)}
+                                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white/40 bg-zinc-900/80 text-xs text-white/80 transition hover:border-white/80 hover:bg-white/15"
+                            >
+                                {isCollapsed ? "+" : "−"}
+                            </button>
+                        )}
+                    </div>
                 </TreeNode>
             );
         });
-    }, [renderData]);
+    }, [layoutResult, collapsed, toggleCollapse]);
 
     const description = "Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.";
 
