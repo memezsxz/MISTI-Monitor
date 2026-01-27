@@ -1,6 +1,50 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
+
+const markdownComponents: Components = {
+    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
+    code: ({ inline, children }) => {
+        const text = String(children);
+        const treatAsBlock = !inline && /\n/.test(text);
+        if (treatAsBlock) {
+            return (
+                <pre className="bg-black/60 rounded-xl border border-white/10 p-3 mb-3 overflow-x-auto text-[0.9em] whitespace-pre-wrap">
+                    <code className="font-mono text-white/90">{text}</code>
+                </pre>
+            );
+        }
+        return (
+            <code className="px-1 py-0.5 rounded bg-white/10 text-[0.92em] font-mono text-white/90">
+                {text}
+            </code>
+        );
+    },
+    h1: ({ children }) => (
+        <h1 className="text-base font-semibold text-white/90 mb-2 mt-3 first:mt-0">{children}</h1>
+    ),
+    h2: ({ children }) => (
+        <h2 className="text-sm font-semibold text-white mb-2 mt-3 first:mt-0">{children}</h2>
+    ),
+    h3: ({ children }) => (
+        <h3 className="text-sm font-semibold text-white/90 mb-1 mt-2 first:mt-0">{children}</h3>
+    ),
+    table: ({ children }) => (
+        <div className="overflow-x-auto mb-3">
+            <table className="w-full text-left border-collapse text-xs">{children}</table>
+        </div>
+    ),
+    th: ({ children }) => (
+        <th className="border-b border-white/20 px-2 py-1 text-white/90 font-semibold">{children}</th>
+    ),
+    td: ({ children }) => (
+        <td className="border-b border-white/10 px-2 py-1 text-white/80 align-top">{children}</td>
+    ),
+};
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faPaperPlane,
@@ -10,53 +54,17 @@ import {
 import clsx from "clsx";
 import { ChatHistoryDialog, type AiChatRow } from "@/components/ChatHistoryDialog";
 
-type AIResponse = {
-    title: string;
-    bullets: string[];
-};
-
-function formatAnswer(answer: string): AIResponse {
-    const lines = answer
-        .split(/\r?\n+/)
-        .map((line) => line.trim())
-        .filter(Boolean);
-
-    if (!lines.length) {
-        return {
-            title: "AI Response",
-            bullets: ["No answer returned."],
-        };
-    }
-
-    if (lines.length === 1) {
-        return {
-            title: "AI Response",
-            bullets: [lines[0]],
-        };
-    }
-
-    return {
-        title: lines[0],
-        bullets: lines.slice(1).map((line) => line.replace(/^-+\s*/, "")),
-    };
-}
-
 export const AIPanel = () => {
     const [input, setInput] = useState("");
     const [lastQuestion, setLastQuestion] = useState<string | null>(null);
-    const [lastAnswer, setLastAnswer] = useState<AIResponse | null>(null);
+    const [lastAnswer, setLastAnswer] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
 
     const [historyOpen, setHistoryOpen] = useState(false);
 
-    const response: AIResponse | null = useMemo(() => {
+    const responseMarkdown: string | null = useMemo(() => {
         if (!lastQuestion) return null;
-        return (
-            lastAnswer ?? {
-                title: "AI Response",
-                bullets: ["Generating answer..."],
-            }
-        );
+        return lastAnswer ?? "Generating answer...";
     }, [lastQuestion, lastAnswer]);
 
     async function submit() {
@@ -79,13 +87,10 @@ export const AIPanel = () => {
             const data = (await res.json()) as { answer?: string };
             const answerText = (data.answer ?? "").trim();
             if (!answerText) throw new Error("Empty response from AI.");
-            setLastAnswer(formatAnswer(answerText));
+            setLastAnswer(answerText);
         } catch (e) {
             console.error(e);
-            setLastAnswer({
-                title: "AI unavailable",
-                bullets: ["Unable to fetch a response right now. Please try again."],
-            });
+            setLastAnswer("AI unavailable.\n\nUnable to fetch a response right now. Please try again.");
         } finally {
             setSaving(false);
         }
@@ -94,7 +99,7 @@ export const AIPanel = () => {
     function selectFromHistory(row: AiChatRow) {
         setLastQuestion(row.question);
 
-        setLastAnswer(formatAnswer(row.answer));
+        setLastAnswer(row.answer);
     }
 
     return (
@@ -161,24 +166,17 @@ export const AIPanel = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    {lastQuestion ? (
-                        <>
-                            <div className="text-white/70 text-xs mb-2">
+                    {lastQuestion && responseMarkdown ? (
+                        <div className="space-y-3">
+                            <div className="text-white/70 text-xs">
                                 Based on: <span className="text-white/85">{lastQuestion}</span>
                             </div>
-
-                            <div className="text-white/90 text-sm font-semibold mb-2">
-                                {response?.title ?? "AI Response"}
+                            <div className="prose prose-invert max-w-none text-white/80 text-sm leading-6">
+                                <ReactMarkdown components={markdownComponents}>
+                                    {responseMarkdown}
+                                </ReactMarkdown>
                             </div>
-
-                            <ul className="space-y-2 text-white/80 text-sm">
-                                {(response?.bullets ?? []).map((b, i) => (
-                                    <li key={i} className="leading-6">
-                                        {b}
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
+                        </div>
                     ) : (
                         <div className="text-white/50 text-sm leading-6">
                             Ask a question to get a structured response (issue, cause, sensors, protocol).

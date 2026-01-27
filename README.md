@@ -22,3 +22,15 @@ npm run db:gen
 npm run db:migrate
 npm run db:seed
 ```
+
+## AI Issues
+
+first install ollama [https://ollama.com](https://ollama.com/)
+
+install deepseek and server
+```bash
+ollama pull deepseek-r1:1.5b
+ollama serve
+```
+
+use ```deepseek-r1:8b``` for better results
