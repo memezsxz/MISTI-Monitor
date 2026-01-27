@@ -58,16 +58,44 @@ export const ConnectorLayer = ({containerRef, edges}: {containerRef: RefObject<H
             const x2 = end.x - bounds.left;
             const y2 = end.y - bounds.top;
 
-            const deltaY = Math.max(40, Math.abs(y2 - y1) * 0.4);
-            const d = `M ${x1} ${y1} C ${x1} ${y1 + deltaY} ${x2} ${y2 - deltaY} ${x2} ${y2}`;
-            return [{key: `${from}->${to}`, d}];
+            if (Math.abs(x2 - x1) < 1) {
+                const dStraight = `M ${x1} ${y1} L ${x1} ${y2}`;
+                return [{key: `${from}->${to}`, d: dStraight}];
+            }
+
+            const midY = (y1 + y2) / 2;
+            const horizontalDir = x2 >= x1 ? 1 : -1;
+            const verticalDir = y2 >= y1 ? 1 : -1;
+            const radius = Math.min(24, Math.abs(midY - y1), Math.abs(x2 - x1) / 2);
+            const elbowY1 = midY - verticalDir * radius;
+            const elbowY2 = midY + verticalDir * radius;
+            const elbowX1 = x1 + horizontalDir * radius;
+            const elbowX2 = x2 - horizontalDir * radius;
+
+            const segments = [
+                `M ${x1} ${y1}`,
+                `L ${x1} ${elbowY1}`,
+                `Q ${x1} ${midY} ${elbowX1} ${midY}`,
+                `L ${elbowX2} ${midY}`,
+                `Q ${x2} ${midY} ${x2} ${elbowY2}`,
+                `L ${x2} ${y2}`,
+            ];
+
+            return [{key: `${from}->${to}`, d: segments.join(" ")}];
         });
     }, [edges, nodes, containerRef, tick]);
 
     return (
-        <svg className="pointer-events-none absolute inset-0 h-full w-full text-white/40">
+        <svg className="pointer-events-none absolute inset-0 h-full w-full">
             {paths.map((path) => (
-                <path key={path.key} d={path.d} fill="none" stroke="currentColor" strokeWidth={2} />
+                <path
+                    key={path.key}
+                    d={path.d}
+                    fill="none"
+                    stroke="#94a3b8"
+                    strokeWidth={2.5}
+                    strokeLinejoin="round"
+                />
             ))}
         </svg>
     );

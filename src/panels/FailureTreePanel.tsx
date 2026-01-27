@@ -1,7 +1,6 @@
 "use client";
 
 import {useEffect, useMemo, useRef, useState} from "react";
-import clsx from "clsx";
 import {Container} from "@/components/Container";
 import {
     BasicEventCard,
@@ -38,8 +37,6 @@ const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent
 
 const H_SPACING = 320;
 const V_SPACING = 210;
-
-type ViewMode = "tree" | "graph";
 
 const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVariant): FailureEvent => {
     const probability = node.probability ?? undefined;
@@ -207,7 +204,6 @@ export const FailureTreePanel = () => {
     const [data, setData] = useState<FailureTreeData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<ViewMode>("tree");
 
     useEffect(() => {
         let active = true;
@@ -234,10 +230,7 @@ export const FailureTreePanel = () => {
         };
     }, []);
 
-    const renderData = useMemo(() => {
-        if (!data) return null;
-        return viewMode === "tree" ? buildDuplicatedTreeLayout(data) : data;
-    }, [data, viewMode]);
+    const renderData = useMemo(() => buildDuplicatedTreeLayout(data), [data]);
 
     const layoutBounds = useMemo(() => computeLayoutBounds(renderData?.nodes ?? []), [renderData]);
 
@@ -275,38 +268,13 @@ export const FailureTreePanel = () => {
         });
     }, [renderData]);
 
-    const description =
-        viewMode === "tree"
-            ? "Tree view duplicates intermediate branches per parent, so every child sits directly beneath its parent with no crossed lines."
-            : "Graph view renders each event once (shared leaves included), which can create crossing lines but preserves the raw DAG.";
+    const description = "Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.";
 
     return (
         <Container>
             <NodeRegistryProvider>
                 <div className="relative flex w-full flex-col gap-4 text-white/80">
-                    <div className="flex flex-col gap-2 text-sm text-white/60 lg:flex-row lg:items-center lg:justify-between">
-                        <p>{description}</p>
-                        <div className="flex gap-2 text-xs">
-                            {([
-                                {mode: "tree" as ViewMode, label: "Tree View"},
-                                {mode: "graph" as ViewMode, label: "Graph View"},
-                            ]).map((option) => (
-                                <button
-                                    key={option.mode}
-                                    type="button"
-                                    onClick={() => setViewMode(option.mode)}
-                                    className={clsx(
-                                        "rounded-full border px-3 py-1 transition-colors",
-                                        viewMode === option.mode
-                                            ? "border-white/70 bg-white/10 text-white"
-                                            : "border-white/20 text-white/60 hover:border-white/40 hover:text-white",
-                                    )}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                    <div className="text-sm text-white/60">{description}</div>
 
                     <div className="relative w-full overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
                         <div
