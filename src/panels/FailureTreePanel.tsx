@@ -36,8 +36,8 @@ const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent
     top: ({event}) => <TopEventCard event={event} highlight />,
 };
 
-const H_SPACING = 220;
-const V_SPACING = 170;
+const H_SPACING = 320;
+const V_SPACING = 210;
 
 type ViewMode = "tree" | "graph";
 
