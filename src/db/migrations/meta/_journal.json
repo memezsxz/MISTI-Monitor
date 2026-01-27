@@ -15,6 +15,13 @@
       "when": 1769429336199,
       "tag": "0001_secret_rocket_raccoon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769553060377,
+      "tag": "0002_flowery_mandroid",
+      "breakpoints": true
     }
   ]
 }

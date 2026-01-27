@@ -12,6 +12,10 @@ import {
     parts,
     sensorReadings,
     users,
+    failureEventLinks,
+    failureEvents,
+    type NewFailureEventLinkRow,
+    type NewFailureEventRow,
 } from "./schema";
 import {inArray} from "drizzle-orm";
 import {turnoverNotes} from "@/db/schema/turnover_notes";
@@ -630,6 +634,1796 @@ async function seed_sensor_readings() {
     await db.insert(sensorReadings).values(readings);
 }
 
+
+// seed_failure_tree_clip1.ts (or paste into seed.ts)
+// Assumes uuidFromString(input: string) already exists (it does in your seed.ts)
+
+function feId(key: string) {
+    return uuidFromString(`failure_event:${key}`);
+}
+
+function felId(fromKey: string, toKey: string) {
+    return uuidFromString(`failure_event_link:${fromKey}->${toKey}`);
+}
+
+export async function seed_failure_tree() {
+    // ---- Events (clip #1) ----
+    const events1: NewFailureEventRow[] = [
+        // main
+        {
+            id: feId("temp_above_normal_conditions"),
+            name: "Temperature Above Normal Conditions",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under main
+        {
+            id: feId("gate_or_temp_above_normal_conditions"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // children of main gate
+        {
+            id: feId("cooling_reservoir_blocked"),
+            name: "Cooling Reservoir Blocked",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("cooling_reservoir_leakage"),
+            name: "Cooling Reservoir Leakage",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("recirculation_of_alternate_route"),
+            name: "Recirculation of Alternate Route",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("heater_kept_on"),
+            name: "Heater Kept On",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under Cooling Reservoir Blocked
+        {
+            id: feId("gate_or_cooling_reservoir_blocked"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // leaves under Cooling Reservoir Blocked
+        {
+            id: feId("valves_close"),
+            name: "Valves Close",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("contamination"),
+            name: "Contamination",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under Recirculation of Alternate Route
+        {
+            id: feId("gate_or_recirculation_of_alternate_route"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // leaves under Recirculation of Alternate Route
+        {
+            id: feId("bucket_1_leak"),
+            name: "Bucket 1 leak",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("bucket_2_leak"),
+            name: "Bucket 2 leak",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    // ---- Events (clip #2) ----
+    const events2: NewFailureEventRow[] = [
+        // main
+        {
+            id: feId("temp_under_normal_conditions"),
+            name: "Temperature Under Normal Conditions",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under main
+        {
+            id: feId("gate_or_temp_under_normal_conditions"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // children
+        {
+            id: feId("excessive_cooling_duration"),
+            name: "Excessive Cooling Duration",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("heater_kept_off"),
+            name: "Heater kept off",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under Excessive Cooling Duration
+        {
+            id: feId("gate_or_excessive_cooling_duration"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // leaves (shared operator error)
+        {
+            id: feId("operator_error"),
+            name: "Operator Error",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("leakage_in_hot_reservoir"),
+            name: "Leakage in Hot Reservoir",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under Heater kept off
+        {
+            id: feId("gate_or_heater_kept_off"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // leaves
+        {
+            id: feId("heater_malfunction"),
+            name: "Heater Malfunction",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    // ---- Events (clip #3) ----
+    const events3: NewFailureEventRow[] = [
+        // root
+        {
+            id: feId("high_flow"),
+            name: "High Flow",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // gate under High Flow
+        {
+            id: feId("gate_or_high_flow"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // branch: Pump Operating Above Normal Conditions
+        {
+            id: feId("pump_operating_above_normal_conditions"),
+            name: "Pump Operating Above Normal Conditions",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_pump_operating_above_normal_conditions"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("system_error"),
+            name: "System Error",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // branch: Blockage Before GP
+        {
+            id: feId("blockage_before_gp"),
+            name: "Blockage Before GP",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_blockage_before_gp"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("blockage_in_original_route"),
+            name: "Blockage in original route",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_blockage_in_original_route"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("blockage_in_alternative_route"),
+            name: "Blockage in Alternative Route",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_blockage_in_alternative_route"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // branch: Blockage After GP
+        {
+            id: feId("blockage_after_gp"),
+            name: "Blockage After GP",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_blockage_after_gp"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // valve-branch gate under Blockage After GP
+        {
+            id: feId("gate_or_blockage_after_gp_valves"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("valve_1_closed"),
+            name: "Valve 1 closed",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("valve_2_closed"),
+            name: "Valve 2 closed",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("valve_3_closed"),
+            name: "Valve 3 closed",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    const events4: NewFailureEventRow[] = [
+        // Leaks branch
+        {
+            id: feId("leaks"),
+            name: "Leaks",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_leaks"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("pipe_crack"),
+            name: "Pipe Crack",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("loose_fittings"),
+            name: "Loose Fittings",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Broken pump branch
+        {
+            id: feId("broken_pump"),
+            name: "Broken pump",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_broken_pump"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("wrong_fluid"),
+            name: "Wrong fluid",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("electrical_problems"),
+            name: "Electrical Problems",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_electrical_problems"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("power_outage"),
+            name: "Power Outage",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("pump_seal_leak"),
+            name: "pump seal leak",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("unknown_malfunction"),
+            name: "unknown malfunction",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Cavitation branch (spelled "Cavatation" in the image)
+        {
+            id: feId("cavitation"),
+            name: "Cavatation",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_cavitation"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("blockage_before_pump"),
+            name: "Blockage Before pump",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("bucket_leaks"),
+            name: "Bucket leaks",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("alt_route_circulation_above_designed_time"),
+            name: "Alternative Route Circulation Above Designed Time",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_alt_route_circulation_above_designed_time"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    const events5: NewFailureEventRow[] = [
+        {
+            id: feId("pump_under_performing"),
+            name: "Pump under-performing",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("sensor_malfunction"),
+            name: "Sensor Malfunction",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_sensor_malfunction"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // children
+        {
+            id: feId("arduino"),
+            name: "Arduino",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("water_contact"),
+            name: "Water Contact",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("wire_misplacement"),
+            name: "Wire Misplacement",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("sensor_overload"),
+            name: "Sensor Overload",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Arduino -> gate
+        {
+            id: feId("gate_or_arduino"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Arduino children
+        {
+            id: feId("code_issues"),
+            name: "Code issues",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("full_storage"),
+            name: "Full storage",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("no_power"),
+            name: "No Power",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Code issues -> gate
+        {
+            id: feId("gate_or_code_issues"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // Code issues leaves
+        {
+            id: feId("error_in_the_code"),
+            name: "Error in the Code",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("wrong_program"),
+            name: "Wrong program",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // No Power -> gate
+        {
+            id: feId("gate_or_no_power"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        // No Power leaves
+        {
+            id: feId("battery_dies"),
+            name: "Battery dies",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("battery_not_connected"),
+            name: "Battery not connected",
+            kind: "basic",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    const events6: NewFailureEventRow[] = [
+        {
+            id: feId("ultimate_fail"),
+            name: "Ultimate Fail",
+            kind: "top",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_ultimate_fail"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("temp_out_of_normal_conditions"),
+            name: "Temperature Out of Normal Conditions",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_temp_out_of_normal_conditions"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("flow_out_of_normal_conditions"),
+            name: "Flow out of normal conditions",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_flow_out_of_normal_conditions"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+
+        {
+            id: feId("low_flow"),
+            name: "Low Flow",
+            kind: "intermediate",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+        {
+            id: feId("gate_or_low_flow"),
+            name: "OR Gate",
+            kind: "gate_or",
+            description: null,
+            probability: null,
+            severity: null,
+            detection: null,
+            metadata: null,
+            tags: null,
+        },
+    ];
+
+    await db.insert(failureEvents).values(events1);
+    await db.insert(failureEvents).values(events2);
+    await db.insert(failureEvents).values(events3);
+    await db.insert(failureEvents).values(events4);
+    await db.insert(failureEvents).values(events5);
+    await db.insert(failureEvents).values(events6);
+
+    // ---- Links (clip #1) ----
+    const links1: NewFailureEventLinkRow[] = [
+        // Temperature Above Normal Conditions -> gate
+        {
+            id: felId("temp_above_normal_conditions", "gate_or_temp_above_normal_conditions"),
+            fromEventId: feId("temp_above_normal_conditions"),
+            toEventId: feId("gate_or_temp_above_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // main gate -> 4 children
+        {
+            id: felId("gate_or_temp_above_normal_conditions", "cooling_reservoir_blocked"),
+            fromEventId: feId("gate_or_temp_above_normal_conditions"),
+            toEventId: feId("cooling_reservoir_blocked"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_temp_above_normal_conditions", "cooling_reservoir_leakage"),
+            fromEventId: feId("gate_or_temp_above_normal_conditions"),
+            toEventId: feId("cooling_reservoir_leakage"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_temp_above_normal_conditions", "recirculation_of_alternate_route"),
+            fromEventId: feId("gate_or_temp_above_normal_conditions"),
+            toEventId: feId("recirculation_of_alternate_route"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_temp_above_normal_conditions", "heater_kept_on"),
+            fromEventId: feId("gate_or_temp_above_normal_conditions"),
+            toEventId: feId("heater_kept_on"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Cooling Reservoir Blocked -> its gate
+        {
+            id: felId("cooling_reservoir_blocked", "gate_or_cooling_reservoir_blocked"),
+            fromEventId: feId("cooling_reservoir_blocked"),
+            toEventId: feId("gate_or_cooling_reservoir_blocked"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> leaves
+        {
+            id: felId("gate_or_cooling_reservoir_blocked", "valves_close"),
+            fromEventId: feId("gate_or_cooling_reservoir_blocked"),
+            toEventId: feId("valves_close"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_cooling_reservoir_blocked", "contamination"),
+            fromEventId: feId("gate_or_cooling_reservoir_blocked"),
+            toEventId: feId("contamination"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Recirculation of Alternate Route -> its gate
+        {
+            id: felId("recirculation_of_alternate_route", "gate_or_recirculation_of_alternate_route"),
+            fromEventId: feId("recirculation_of_alternate_route"),
+            toEventId: feId("gate_or_recirculation_of_alternate_route"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> leaves
+        {
+            id: felId("gate_or_recirculation_of_alternate_route", "bucket_1_leak"),
+            fromEventId: feId("gate_or_recirculation_of_alternate_route"),
+            toEventId: feId("bucket_1_leak"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_recirculation_of_alternate_route", "bucket_2_leak"),
+            fromEventId: feId("gate_or_recirculation_of_alternate_route"),
+            toEventId: feId("bucket_2_leak"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    const links2: NewFailureEventLinkRow[] = [
+        // Temperature Under Normal Conditions -> gate
+        {
+            id: felId("temp_under_normal_conditions", "gate_or_temp_under_normal_conditions"),
+            fromEventId: feId("temp_under_normal_conditions"),
+            toEventId: feId("gate_or_temp_under_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // main gate -> 2 children
+        {
+            id: felId("gate_or_temp_under_normal_conditions", "excessive_cooling_duration"),
+            fromEventId: feId("gate_or_temp_under_normal_conditions"),
+            toEventId: feId("excessive_cooling_duration"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_temp_under_normal_conditions", "heater_kept_off"),
+            fromEventId: feId("gate_or_temp_under_normal_conditions"),
+            toEventId: feId("heater_kept_off"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Excessive Cooling Duration -> its gate
+        {
+            id: felId("excessive_cooling_duration", "gate_or_excessive_cooling_duration"),
+            fromEventId: feId("excessive_cooling_duration"),
+            toEventId: feId("gate_or_excessive_cooling_duration"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> leaves
+        {
+            id: felId("gate_or_excessive_cooling_duration", "operator_error"),
+            fromEventId: feId("gate_or_excessive_cooling_duration"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_excessive_cooling_duration", "leakage_in_hot_reservoir"),
+            fromEventId: feId("gate_or_excessive_cooling_duration"),
+            toEventId: feId("leakage_in_hot_reservoir"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Heater kept off -> its gate
+        {
+            id: felId("heater_kept_off", "gate_or_heater_kept_off"),
+            fromEventId: feId("heater_kept_off"),
+            toEventId: feId("gate_or_heater_kept_off"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> leaves
+        {
+            id: felId("gate_or_heater_kept_off", "operator_error"),
+            fromEventId: feId("gate_or_heater_kept_off"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_heater_kept_off", "heater_malfunction"),
+            fromEventId: feId("gate_or_heater_kept_off"),
+            toEventId: feId("heater_malfunction"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    // ---- Links (clip #3) ----
+    const links3: NewFailureEventLinkRow[] = [
+        // High Flow -> gate
+        {
+            id: felId("high_flow", "gate_or_high_flow"),
+            fromEventId: feId("high_flow"),
+            toEventId: feId("gate_or_high_flow"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> (3) main branches
+        {
+            id: felId("gate_or_high_flow", "pump_operating_above_normal_conditions"),
+            fromEventId: feId("gate_or_high_flow"),
+            toEventId: feId("pump_operating_above_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_high_flow", "blockage_before_gp"),
+            fromEventId: feId("gate_or_high_flow"),
+            toEventId: feId("blockage_before_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_high_flow", "blockage_after_gp"),
+            fromEventId: feId("gate_or_high_flow"),
+            toEventId: feId("blockage_after_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Pump Operating Above Normal Conditions -> its gate
+        {
+            id: felId("pump_operating_above_normal_conditions", "gate_or_pump_operating_above_normal_conditions"),
+            fromEventId: feId("pump_operating_above_normal_conditions"),
+            toEventId: feId("gate_or_pump_operating_above_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> Operator Error (shared) + System Error
+        {
+            id: felId("gate_or_pump_operating_above_normal_conditions", "operator_error"),
+            fromEventId: feId("gate_or_pump_operating_above_normal_conditions"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_pump_operating_above_normal_conditions", "system_error"),
+            fromEventId: feId("gate_or_pump_operating_above_normal_conditions"),
+            toEventId: feId("system_error"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Blockage Before GP -> its gate
+        {
+            id: felId("blockage_before_gp", "gate_or_blockage_before_gp"),
+            fromEventId: feId("blockage_before_gp"),
+            toEventId: feId("gate_or_blockage_before_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> original route + alternative route
+        {
+            id: felId("gate_or_blockage_before_gp", "blockage_in_original_route"),
+            fromEventId: feId("gate_or_blockage_before_gp"),
+            toEventId: feId("blockage_in_original_route"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_before_gp", "blockage_in_alternative_route"),
+            fromEventId: feId("gate_or_blockage_before_gp"),
+            toEventId: feId("blockage_in_alternative_route"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Blockage in original route -> its gate
+        {
+            id: felId("blockage_in_original_route", "gate_or_blockage_in_original_route"),
+            fromEventId: feId("blockage_in_original_route"),
+            toEventId: feId("gate_or_blockage_in_original_route"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> Valves closed (shared) + Contamination (shared)
+        {
+            id: felId("gate_or_blockage_in_original_route", "valves_close"),
+            fromEventId: feId("gate_or_blockage_in_original_route"),
+            toEventId: feId("valves_close"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_in_original_route", "contamination"),
+            fromEventId: feId("gate_or_blockage_in_original_route"),
+            toEventId: feId("contamination"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Blockage in Alternative Route -> its gate
+        {
+            id: felId("blockage_in_alternative_route", "gate_or_blockage_in_alternative_route"),
+            fromEventId: feId("blockage_in_alternative_route"),
+            toEventId: feId("gate_or_blockage_in_alternative_route"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> Operator error (shared) + Valves closed (shared) + Contamination (shared)
+        {
+            id: felId("gate_or_blockage_in_alternative_route", "operator_error"),
+            fromEventId: feId("gate_or_blockage_in_alternative_route"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_in_alternative_route", "valves_close"),
+            fromEventId: feId("gate_or_blockage_in_alternative_route"),
+            toEventId: feId("valves_close"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_in_alternative_route", "contamination"),
+            fromEventId: feId("gate_or_blockage_in_alternative_route"),
+            toEventId: feId("contamination"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Blockage After GP -> its gate
+        {
+            id: felId("blockage_after_gp", "gate_or_blockage_after_gp"),
+            fromEventId: feId("blockage_after_gp"),
+            toEventId: feId("gate_or_blockage_after_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // its gate -> Contamination (shared) + valve-subgate
+        {
+            id: felId("gate_or_blockage_after_gp", "contamination"),
+            fromEventId: feId("gate_or_blockage_after_gp"),
+            toEventId: feId("contamination"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_after_gp", "gate_or_blockage_after_gp_valves"),
+            fromEventId: feId("gate_or_blockage_after_gp"),
+            toEventId: feId("gate_or_blockage_after_gp_valves"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // valve-subgate -> valve1/2/3
+        {
+            id: felId("gate_or_blockage_after_gp_valves", "valve_1_closed"),
+            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            toEventId: feId("valve_1_closed"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_after_gp_valves", "valve_2_closed"),
+            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            toEventId: feId("valve_2_closed"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_blockage_after_gp_valves", "valve_3_closed"),
+            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            toEventId: feId("valve_3_closed"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    // ---- Links (clip #4) ----
+    const links4: NewFailureEventLinkRow[] = [
+        // Leaks -> gate
+        {
+            id: felId("leaks", "gate_or_leaks"),
+            fromEventId: feId("leaks"),
+            toEventId: feId("gate_or_leaks"),
+            linkType: "default",
+            metadata: null,
+        },
+        // gate -> Pipe Crack, Loose Fittings
+        {
+            id: felId("gate_or_leaks", "pipe_crack"),
+            fromEventId: feId("gate_or_leaks"),
+            toEventId: feId("pipe_crack"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_leaks", "loose_fittings"),
+            fromEventId: feId("gate_or_leaks"),
+            toEventId: feId("loose_fittings"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Broken pump -> gate
+        {
+            id: felId("broken_pump", "gate_or_broken_pump"),
+            fromEventId: feId("broken_pump"),
+            toEventId: feId("gate_or_broken_pump"),
+            linkType: "default",
+            metadata: null,
+        },
+        // broken pump gate -> children (incl. shared contamination + cavitation)
+        {
+            id: felId("gate_or_broken_pump", "contamination"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("contamination"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_broken_pump", "wrong_fluid"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("wrong_fluid"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_broken_pump", "electrical_problems"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("electrical_problems"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_broken_pump", "pump_seal_leak"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("pump_seal_leak"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_broken_pump", "unknown_malfunction"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("unknown_malfunction"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_broken_pump", "cavitation"),
+            fromEventId: feId("gate_or_broken_pump"),
+            toEventId: feId("cavitation"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Electrical Problems -> gate
+        {
+            id: felId("electrical_problems", "gate_or_electrical_problems"),
+            fromEventId: feId("electrical_problems"),
+            toEventId: feId("gate_or_electrical_problems"),
+            linkType: "default",
+            metadata: null,
+        },
+        // electrical gate -> Operator Error (shared), Power Outage
+        {
+            id: felId("gate_or_electrical_problems", "operator_error"),
+            fromEventId: feId("gate_or_electrical_problems"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_electrical_problems", "power_outage"),
+            fromEventId: feId("gate_or_electrical_problems"),
+            toEventId: feId("power_outage"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Cavitation -> gate
+        {
+            id: felId("cavitation", "gate_or_cavitation"),
+            fromEventId: feId("cavitation"),
+            toEventId: feId("gate_or_cavitation"),
+            linkType: "default",
+            metadata: null,
+        },
+        // cavitation gate -> children (operator error shared)
+        {
+            id: felId("gate_or_cavitation", "operator_error"),
+            fromEventId: feId("gate_or_cavitation"),
+            toEventId: feId("operator_error"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_cavitation", "blockage_before_pump"),
+            fromEventId: feId("gate_or_cavitation"),
+            toEventId: feId("blockage_before_pump"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_cavitation", "bucket_leaks"),
+            fromEventId: feId("gate_or_cavitation"),
+            toEventId: feId("bucket_leaks"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_cavitation", "alt_route_circulation_above_designed_time"),
+            fromEventId: feId("gate_or_cavitation"),
+            toEventId: feId("alt_route_circulation_above_designed_time"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Alternative Route Circulation Above Designed Time -> gate
+        {
+            id: felId(
+                "alt_route_circulation_above_designed_time",
+                "gate_or_alt_route_circulation_above_designed_time",
+            ),
+            fromEventId: feId("alt_route_circulation_above_designed_time"),
+            toEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            linkType: "default",
+            metadata: null,
+        },
+        // its gate -> bucket 1/2 leak (shared)
+        {
+            id: felId("gate_or_alt_route_circulation_above_designed_time", "bucket_1_leak"),
+            fromEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            toEventId: feId("bucket_1_leak"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_alt_route_circulation_above_designed_time", "bucket_2_leak"),
+            fromEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            toEventId: feId("bucket_2_leak"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    // ---- Links (clip #5) ----
+    const links5: NewFailureEventLinkRow[] = [
+        // Sensor Malfunction -> gate
+        {
+            id: felId("sensor_malfunction", "gate_or_sensor_malfunction"),
+            fromEventId: feId("sensor_malfunction"),
+            toEventId: feId("gate_or_sensor_malfunction"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> children
+        {
+            id: felId("gate_or_sensor_malfunction", "arduino"),
+            fromEventId: feId("gate_or_sensor_malfunction"),
+            toEventId: feId("arduino"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_sensor_malfunction", "water_contact"),
+            fromEventId: feId("gate_or_sensor_malfunction"),
+            toEventId: feId("water_contact"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_sensor_malfunction", "wire_misplacement"),
+            fromEventId: feId("gate_or_sensor_malfunction"),
+            toEventId: feId("wire_misplacement"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_sensor_malfunction", "sensor_overload"),
+            fromEventId: feId("gate_or_sensor_malfunction"),
+            toEventId: feId("sensor_overload"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Arduino -> gate
+        {
+            id: felId("arduino", "gate_or_arduino"),
+            fromEventId: feId("arduino"),
+            toEventId: feId("gate_or_arduino"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> Code issues, Full storage, No Power, Unknown malfunction (shared)
+        {
+            id: felId("gate_or_arduino", "code_issues"),
+            fromEventId: feId("gate_or_arduino"),
+            toEventId: feId("code_issues"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_arduino", "full_storage"),
+            fromEventId: feId("gate_or_arduino"),
+            toEventId: feId("full_storage"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_arduino", "no_power"),
+            fromEventId: feId("gate_or_arduino"),
+            toEventId: feId("no_power"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_arduino", "unknown_malfunction"),
+            fromEventId: feId("gate_or_arduino"),
+            toEventId: feId("unknown_malfunction"), // reused
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Code issues -> gate
+        {
+            id: felId("code_issues", "gate_or_code_issues"),
+            fromEventId: feId("code_issues"),
+            toEventId: feId("gate_or_code_issues"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> Error in the Code, Wrong program
+        {
+            id: felId("gate_or_code_issues", "error_in_the_code"),
+            fromEventId: feId("gate_or_code_issues"),
+            toEventId: feId("error_in_the_code"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_code_issues", "wrong_program"),
+            fromEventId: feId("gate_or_code_issues"),
+            toEventId: feId("wrong_program"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // No Power -> gate
+        {
+            id: felId("no_power", "gate_or_no_power"),
+            fromEventId: feId("no_power"),
+            toEventId: feId("gate_or_no_power"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> Battery dies, Battery not connected
+        {
+            id: felId("gate_or_no_power", "battery_dies"),
+            fromEventId: feId("gate_or_no_power"),
+            toEventId: feId("battery_dies"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_no_power", "battery_not_connected"),
+            fromEventId: feId("gate_or_no_power"),
+            toEventId: feId("battery_not_connected"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    const links6: NewFailureEventLinkRow[] = [
+        // Ultimate Fail -> gate
+        {
+            id: felId("ultimate_fail", "gate_or_ultimate_fail"),
+            fromEventId: feId("ultimate_fail"),
+            toEventId: feId("gate_or_ultimate_fail"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> Temperature Out + Flow out
+        {
+            id: felId("gate_or_ultimate_fail", "temp_out_of_normal_conditions"),
+            fromEventId: feId("gate_or_ultimate_fail"),
+            toEventId: feId("temp_out_of_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_ultimate_fail", "flow_out_of_normal_conditions"),
+            fromEventId: feId("gate_or_ultimate_fail"),
+            toEventId: feId("flow_out_of_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Temperature Out of Normal Conditions -> gate
+        {
+            id: felId("temp_out_of_normal_conditions", "gate_or_temp_out_of_normal_conditions"),
+            fromEventId: feId("temp_out_of_normal_conditions"),
+            toEventId: feId("gate_or_temp_out_of_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> Above / Under (reused)
+        {
+            id: felId("gate_or_temp_out_of_normal_conditions", "temp_above_normal_conditions"),
+            fromEventId: feId("gate_or_temp_out_of_normal_conditions"),
+            toEventId: feId("temp_above_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_temp_out_of_normal_conditions", "temp_under_normal_conditions"),
+            fromEventId: feId("gate_or_temp_out_of_normal_conditions"),
+            toEventId: feId("temp_under_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Flow out of normal conditions -> gate
+        {
+            id: felId("flow_out_of_normal_conditions", "gate_or_flow_out_of_normal_conditions"),
+            fromEventId: feId("flow_out_of_normal_conditions"),
+            toEventId: feId("gate_or_flow_out_of_normal_conditions"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // gate -> High Flow (reused) + Low Flow (new)
+        {
+            id: felId("gate_or_flow_out_of_normal_conditions", "high_flow"),
+            fromEventId: feId("gate_or_flow_out_of_normal_conditions"),
+            toEventId: feId("high_flow"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_flow_out_of_normal_conditions", "low_flow"),
+            fromEventId: feId("gate_or_flow_out_of_normal_conditions"),
+            toEventId: feId("low_flow"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Low Flow -> gate
+        {
+            id: felId("low_flow", "gate_or_low_flow"),
+            fromEventId: feId("low_flow"),
+            toEventId: feId("gate_or_low_flow"),
+            linkType: "default",
+            metadata: null,
+        },
+
+        // Low Flow gate -> children (all reused from earlier clips)
+        {
+            id: felId("gate_or_low_flow", "blockage_before_gp"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("blockage_before_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_low_flow", "blockage_after_gp"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("blockage_after_gp"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_low_flow", "leaks"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("leaks"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_low_flow", "broken_pump"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("broken_pump"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_low_flow", "pump_under_performing"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("pump_under_performing"),
+            linkType: "default",
+            metadata: null,
+        },
+        {
+            id: felId("gate_or_low_flow", "sensor_malfunction"),
+            fromEventId: feId("gate_or_low_flow"),
+            toEventId: feId("sensor_malfunction"),
+            linkType: "default",
+            metadata: null,
+        },
+    ];
+
+    await db.insert(failureEventLinks).values(links1);
+    await db.insert(failureEventLinks).values(links2);
+    await db.insert(failureEventLinks).values(links3);
+    await db.insert(failureEventLinks).values(links4);
+    await db.insert(failureEventLinks).values(links5);
+    await db.insert(failureEventLinks).values(links6);
+}
+
 async function main() {
     await seed_users()
     await seed_parts()
@@ -638,6 +2432,7 @@ async function main() {
     await seed_notifications()
     await seed_chats()
     await seed_shifts_notes()
+    await seed_failure_tree()
 }
 
 main()

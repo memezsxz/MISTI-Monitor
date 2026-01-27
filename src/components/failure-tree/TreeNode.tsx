@@ -1,13 +1,14 @@
-import {ReactNode, useCallback, useEffect, useRef} from "react";
+import {CSSProperties, ReactNode, useCallback, useEffect, useRef} from "react";
 import {useNodeRegistry} from "@/components/failure-tree/NodeRegistry";
 
 interface TreeNodeProps {
     id: string;
     className?: string;
+    style?: CSSProperties;
     children: ReactNode;
 }
 
-export const TreeNode = ({id, className, children}: TreeNodeProps) => {
+export const TreeNode = ({id, className, style, children}: TreeNodeProps) => {
     const {registerNode, unregisterNode, notifyChange} = useNodeRegistry();
     const previousElement = useRef<HTMLDivElement | null>(null);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -50,7 +51,7 @@ export const TreeNode = ({id, className, children}: TreeNodeProps) => {
     }, [cleanupObserver]);
 
     return (
-        <div ref={refCallback} data-node-id={id} className={className}>
+        <div ref={refCallback} data-node-id={id} className={className} style={style}>
             {children}
         </div>
     );

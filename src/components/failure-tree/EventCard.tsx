@@ -71,7 +71,7 @@ export const FailureEventCard = ({
     );
 };
 
-export interface FailureEventComponentProps extends Omit<FailureEventCardProps, "variant"> {}
+export type FailureEventComponentProps = Omit<FailureEventCardProps, "variant">;
 
 export const BasicEventCard = (props: FailureEventComponentProps) => (
     <FailureEventCard {...props} variant="basic" />
