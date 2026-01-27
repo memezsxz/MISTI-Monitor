@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 import { db } from "@/db/db";
 import { notifications, parts, sensorReadings } from "@/db/schema";
 import { analyzePumpSample, type PumpPredictionSample, type PumpCondition } from "@/lib/aiAnalize";
-import { desc, inArray, isNull } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
 
 const elementToSampleKey: Record<string, keyof PumpPredictionSample> = {
     sensor_1: "flow_1",
@@ -27,7 +27,7 @@ const issueMeta: Record<Exclude<PumpCondition, "normal">, { title: string; messa
     leak: {
         title: "Possible leak detected",
         message: "Sensor readings resemble a leak condition. Inspect lines and joints for drips or loose fittings.",
-        level: "medium",
+        level: "high",
     },
     temp: {
         title: "Over-temperature pattern",
@@ -91,7 +91,10 @@ export async function POST() {
         }
 
         const latestNotification = await db
-            .select({ id: notifications.id, title: notifications.title })
+            .select({
+                id: notifications.id,
+                title: notifications.title,
+            })
             .from(notifications)
             .orderBy(desc(notifications.createdAt))
             .limit(1);

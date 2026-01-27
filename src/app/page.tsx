@@ -16,14 +16,17 @@ export default function Home() {
     }
     return (
         <>
-                <div className="flex min-h-screen items-stretch font-sans bg-zinc-900">
+                <div className="flex min-h-screen min-w-screen items-stretch font-sans bg-zinc-900">
                     <NavigationPanel
                         currentNav={currentNav}
                         onNavChange={setCurrentNav}
                         selectedPartId={selectedPartId}
                     />
-                    <main className="flex-1 flex py-10 pt-15 items-center justify-center transition-all duration-300 ease-out">
-                        <div className={clsx("w-full grid gap-3", currentNav == "" ? "max-w-[70%]" : "max-w-[80%]")}>
+                    <main className="flex-1 min-w-0 flex py-10 pt-15 px-4 sm:px-6 lg:px-10 items-center justify-center transition-all duration-300 ease-out">
+                        <div className={clsx(
+                            "w-full grid gap-3 mx-auto",
+                            currentNav === "" ? "max-w-full lg:max-w-[70%]" : "max-w-full lg:max-w-[80%]"
+                        )}>
                             <div className="flex justify-center pb-10">
                                 <div className="inline-flex w-fit rounded-lg border border-white/10 bg-white/5 p-1 text-xs text-white/80">
                                 <button
