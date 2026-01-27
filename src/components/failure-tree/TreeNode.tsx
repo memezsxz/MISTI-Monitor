@@ -1,4 +1,4 @@
-import {ReactNode, useCallback, useRef} from "react";
+import {ReactNode, useCallback, useEffect, useRef} from "react";
 import {useNodeRegistry} from "@/components/failure-tree/NodeRegistry";
 
 interface TreeNodeProps {
@@ -8,8 +8,23 @@ interface TreeNodeProps {
 }
 
 export const TreeNode = ({id, className, children}: TreeNodeProps) => {
-    const {registerNode, unregisterNode} = useNodeRegistry();
+    const {registerNode, unregisterNode, notifyChange} = useNodeRegistry();
     const previousElement = useRef<HTMLDivElement | null>(null);
+    const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+    const cleanupObserver = useCallback(() => {
+        if (resizeObserverRef.current) {
+            resizeObserverRef.current.disconnect();
+            resizeObserverRef.current = null;
+        }
+    }, []);
+
+    const setupObserver = useCallback((element: HTMLDivElement | null) => {
+        cleanupObserver();
+        if (!element) return;
+        resizeObserverRef.current = new ResizeObserver(() => notifyChange());
+        resizeObserverRef.current.observe(element);
+    }, [cleanupObserver, notifyChange]);
 
     const refCallback = useCallback((element: HTMLDivElement | null) => {
         if (previousElement.current === element) {
@@ -19,14 +34,20 @@ export const TreeNode = ({id, className, children}: TreeNodeProps) => {
         if (element) {
             registerNode(id, element);
             previousElement.current = element;
+            setupObserver(element);
             return;
         }
 
         if (previousElement.current) {
             unregisterNode(id);
             previousElement.current = null;
+            cleanupObserver();
         }
-    }, [id, registerNode, unregisterNode]);
+    }, [cleanupObserver, id, registerNode, setupObserver, unregisterNode]);
+
+    useEffect(() => () => {
+        cleanupObserver();
+    }, [cleanupObserver]);
 
     return (
         <div ref={refCallback} data-node-id={id} className={className}>

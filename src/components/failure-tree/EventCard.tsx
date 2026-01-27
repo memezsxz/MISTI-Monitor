@@ -36,14 +36,16 @@ export const FailureEventCard = ({
     return (
         <div
             className={clsx(
-                "group min-w-[12rem] rounded-md border-2 bg-zinc-950/70 px-4 py-3 text-white/85 transition-colors",
+                "group inline-flex w-64 flex-col items-center rounded-md border-2 bg-zinc-950/70 px-4 py-3 text-white/85 transition-colors",
                 styles.border,
                 highlight && "ring-2 ring-white/60"
             )}
         >
-            <p className="text-base font-semibold text-white">{event.name}</p>
-            <div className="max-h-0 overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-64 group-hover:opacity-100">
-                <p className="mt-1 text-sm font-semibold uppercase tracking-wide text-white/70">{styles.label}</p>
+            <p className="w-full text-center text-base font-semibold text-white transition-all group-hover:text-left">
+                {event.name}
+            </p>
+            <div className="max-h-0 w-full overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-64 group-hover:opacity-100">
+                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-white/70">{styles.label}</p>
 
                 {event.description && (
                     <p className="mt-1 text-sm text-white/70">{event.description}</p>
@@ -64,7 +66,7 @@ export const FailureEventCard = ({
                 )}
 
                 {children && <div className="mt-4">{children}</div>}
-                </div>
+            </div>
         </div>
     );
 };

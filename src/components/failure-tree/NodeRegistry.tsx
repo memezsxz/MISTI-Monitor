@@ -7,6 +7,7 @@ interface NodeRegistryContextValue {
     registerNode: (id: string, element: HTMLElement) => void;
     unregisterNode: (id: string) => void;
     subscribe: (listener: () => void) => () => void;
+    notifyChange: () => void;
 }
 
 const NodeRegistryContext = createContext<NodeRegistryContextValue | null>(null);
@@ -41,7 +42,8 @@ export const NodeRegistryProvider = ({children}: {children: ReactNode}) => {
         registerNode,
         unregisterNode,
         subscribe,
-    }), [registerNode, unregisterNode, subscribe]);
+        notifyChange,
+    }), [registerNode, unregisterNode, subscribe, notifyChange]);
 
     return (
         <NodeRegistryContext.Provider value={value}>
