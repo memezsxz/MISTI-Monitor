@@ -760,9 +760,9 @@ export async function seed_failure_tree() {
 
         // gate under Recirculation of Alternate Route
         {
-            id: feId("gate_or_recirculation_of_alternate_route"),
-            name: "OR Gate",
-            kind: "gate_or",
+            id: feId("gate_and_recirculation_of_alternate_route"),
+            name: "AND Gate",
+            kind: "gate_and",
             description: null,
             probability: null,
             severity: null,
@@ -988,9 +988,9 @@ export async function seed_failure_tree() {
             tags: null,
         },
         {
-            id: feId("gate_or_blockage_before_gp"),
-            name: "OR Gate",
-            kind: "gate_or",
+            id: feId("gate_and_blockage_before_gp"),
+            name: "AND Gate",
+            kind: "gate_and",
             description: null,
             probability: null,
             severity: null,
@@ -1071,9 +1071,9 @@ export async function seed_failure_tree() {
 
         // valve-branch gate under Blockage After GP
         {
-            id: feId("gate_or_blockage_after_gp_valves"),
-            name: "OR Gate",
-            kind: "gate_or",
+            id: feId("gate_and_blockage_after_gp_valves"),
+            name: "AND Gate",
+            kind: "gate_and",
             description: null,
             probability: null,
             severity: null,
@@ -1310,9 +1310,9 @@ export async function seed_failure_tree() {
             tags: null,
         },
         {
-            id: feId("gate_or_alt_route_circulation_above_designed_time"),
-            name: "OR Gate",
-            kind: "gate_or",
+            id: feId("gate_and_alt_route_circulation_above_designed_time"),
+            name: "AND Gate",
+            kind: "gate_and",
             description: null,
             probability: null,
             severity: null,
@@ -1696,24 +1696,24 @@ export async function seed_failure_tree() {
 
         // Recirculation of Alternate Route -> its gate
         {
-            id: felId("recirculation_of_alternate_route", "gate_or_recirculation_of_alternate_route"),
+            id: felId("recirculation_of_alternate_route", "gate_and_recirculation_of_alternate_route"),
             fromEventId: feId("recirculation_of_alternate_route"),
-            toEventId: feId("gate_or_recirculation_of_alternate_route"),
+            toEventId: feId("gate_and_recirculation_of_alternate_route"),
             linkType: "default",
             metadata: null,
         },
 
         // its gate -> leaves
         {
-            id: felId("gate_or_recirculation_of_alternate_route", "bucket_1_leak"),
-            fromEventId: feId("gate_or_recirculation_of_alternate_route"),
+            id: felId("gate_and_recirculation_of_alternate_route", "bucket_1_leak"),
+            fromEventId: feId("gate_and_recirculation_of_alternate_route"),
             toEventId: feId("bucket_1_leak"),
             linkType: "default",
             metadata: null,
         },
         {
-            id: felId("gate_or_recirculation_of_alternate_route", "bucket_2_leak"),
-            fromEventId: feId("gate_or_recirculation_of_alternate_route"),
+            id: felId("gate_and_recirculation_of_alternate_route", "bucket_2_leak"),
+            fromEventId: feId("gate_and_recirculation_of_alternate_route"),
             toEventId: feId("bucket_2_leak"),
             linkType: "default",
             metadata: null,
@@ -1858,24 +1858,24 @@ export async function seed_failure_tree() {
 
         // Blockage Before GP -> its gate
         {
-            id: felId("blockage_before_gp", "gate_or_blockage_before_gp"),
+            id: felId("blockage_before_gp", "gate_and_blockage_before_gp"),
             fromEventId: feId("blockage_before_gp"),
-            toEventId: feId("gate_or_blockage_before_gp"),
+            toEventId: feId("gate_and_blockage_before_gp"),
             linkType: "default",
             metadata: null,
         },
 
         // its gate -> original route + alternative route
         {
-            id: felId("gate_or_blockage_before_gp", "blockage_in_original_route"),
-            fromEventId: feId("gate_or_blockage_before_gp"),
+            id: felId("gate_and_blockage_before_gp", "blockage_in_original_route"),
+            fromEventId: feId("gate_and_blockage_before_gp"),
             toEventId: feId("blockage_in_original_route"),
             linkType: "default",
             metadata: null,
         },
         {
-            id: felId("gate_or_blockage_before_gp", "blockage_in_alternative_route"),
-            fromEventId: feId("gate_or_blockage_before_gp"),
+            id: felId("gate_and_blockage_before_gp", "blockage_in_alternative_route"),
+            fromEventId: feId("gate_and_blockage_before_gp"),
             toEventId: feId("blockage_in_alternative_route"),
             linkType: "default",
             metadata: null,
@@ -1956,31 +1956,31 @@ export async function seed_failure_tree() {
             metadata: null,
         },
         {
-            id: felId("gate_or_blockage_after_gp", "gate_or_blockage_after_gp_valves"),
+            id: felId("gate_or_blockage_after_gp", "gate_and_blockage_after_gp_valves"),
             fromEventId: feId("gate_or_blockage_after_gp"),
-            toEventId: feId("gate_or_blockage_after_gp_valves"),
+            toEventId: feId("gate_and_blockage_after_gp_valves"),
             linkType: "default",
             metadata: null,
         },
 
         // valve-subgate -> valve1/2/3
         {
-            id: felId("gate_or_blockage_after_gp_valves", "valve_1_closed"),
-            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            id: felId("gate_and_blockage_after_gp_valves", "valve_1_closed"),
+            fromEventId: feId("gate_and_blockage_after_gp_valves"),
             toEventId: feId("valve_1_closed"),
             linkType: "default",
             metadata: null,
         },
         {
-            id: felId("gate_or_blockage_after_gp_valves", "valve_2_closed"),
-            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            id: felId("gate_and_blockage_after_gp_valves", "valve_2_closed"),
+            fromEventId: feId("gate_and_blockage_after_gp_valves"),
             toEventId: feId("valve_2_closed"),
             linkType: "default",
             metadata: null,
         },
         {
-            id: felId("gate_or_blockage_after_gp_valves", "valve_3_closed"),
-            fromEventId: feId("gate_or_blockage_after_gp_valves"),
+            id: felId("gate_and_blockage_after_gp_valves", "valve_3_closed"),
+            fromEventId: feId("gate_and_blockage_after_gp_valves"),
             toEventId: feId("valve_3_closed"),
             linkType: "default",
             metadata: null,
@@ -2131,24 +2131,24 @@ export async function seed_failure_tree() {
         {
             id: felId(
                 "alt_route_circulation_above_designed_time",
-                "gate_or_alt_route_circulation_above_designed_time",
+                "gate_and_alt_route_circulation_above_designed_time",
             ),
             fromEventId: feId("alt_route_circulation_above_designed_time"),
-            toEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            toEventId: feId("gate_and_alt_route_circulation_above_designed_time"),
             linkType: "default",
             metadata: null,
         },
         // its gate -> bucket 1/2 leak (shared)
         {
-            id: felId("gate_or_alt_route_circulation_above_designed_time", "bucket_1_leak"),
-            fromEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            id: felId("gate_and_alt_route_circulation_above_designed_time", "bucket_1_leak"),
+            fromEventId: feId("gate_and_alt_route_circulation_above_designed_time"),
             toEventId: feId("bucket_1_leak"),
             linkType: "default",
             metadata: null,
         },
         {
-            id: felId("gate_or_alt_route_circulation_above_designed_time", "bucket_2_leak"),
-            fromEventId: feId("gate_or_alt_route_circulation_above_designed_time"),
+            id: felId("gate_and_alt_route_circulation_above_designed_time", "bucket_2_leak"),
+            fromEventId: feId("gate_and_alt_route_circulation_above_designed_time"),
             toEventId: feId("bucket_2_leak"),
             linkType: "default",
             metadata: null,
