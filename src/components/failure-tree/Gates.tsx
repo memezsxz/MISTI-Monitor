@@ -1,11 +1,5 @@
 import clsx from "clsx";
-import {ReactNode} from "react";
 import {GateType} from "@/types/failureTree";
-
-interface GateProps {
-    inputs?: ReactNode[];
-    outputs?: ReactNode[];
-}
 
 const gateStyleMap: Record<GateType, { text: string; label: string; }> = {
     and: {
@@ -44,48 +38,16 @@ const GateSymbol = ({type}: { type: GateType }) => {
     );
 };
 
-const ParentConnector = ({nodes}: { nodes: ReactNode[] }) => (
-    <div className="flex flex-col items-center">
-        {nodes.map((node, index) => (
-            <div key={index} className="flex flex-col items-center">
-                {node}
-                <div className="h-6 w-0.5 bg-white/30" />
-            </div>
-        ))}
+export const AndGate = () => (
+    <div className="flex flex-col items-center text-white/80">
+        <GateSymbol type="and" />
+        <span className="text-xs uppercase tracking-[0.3em] text-white/60">{gateStyleMap.and.label}</span>
     </div>
 );
 
-const ChildrenConnector = ({nodes}: { nodes: ReactNode[] }) => (
-    <div className="flex flex-col items-center">
-        <div className="h-6 w-0.5 bg-white/30" />
-        <div className="relative flex items-start gap-6 px-6">
-            <div className="absolute left-0 right-0 top-0 h-px bg-white/30" />
-            {nodes.map((node, index) => (
-                <div key={index} className="flex flex-col items-center">
-                    <div className="h-6 w-0.5 bg-white/30" />
-                    {node}
-                </div>
-            ))}
-        </div>
+export const OrGate = () => (
+    <div className="flex flex-col items-center text-white/80">
+        <GateSymbol type="or" />
+        <span className="text-xs uppercase tracking-[0.3em] text-white/60">{gateStyleMap.or.label}</span>
     </div>
 );
-
-const GateBody = ({type, hasParent, hasChildren}: { type: GateType; hasParent: boolean; hasChildren: boolean }) => (
-    <div className="flex flex-col items-center">
-        {hasParent && <div className="h-4 w-0.5 bg-white/30" />}
-        <GateSymbol type={type} />
-        {hasChildren && <div className="h-4 w-0.5 bg-white/30" />}
-    </div>
-);
-
-const Gate = ({type, inputs = [], outputs = []}: GateProps & { type: GateType }) => (
-    <div className="flex flex-col items-center gap-2 text-white/80">
-        {outputs.length > 0 && <ParentConnector nodes={outputs} />}
-        <GateBody type={type} hasParent={outputs.length > 0} hasChildren={inputs.length > 0} />
-        {inputs.length > 0 && <ChildrenConnector nodes={inputs} />}
-    </div>
-);
-
-export const AndGate = (props: GateProps) => <Gate type="and" {...props} />;
-
-export const OrGate = (props: GateProps) => <Gate type="or" {...props} />;

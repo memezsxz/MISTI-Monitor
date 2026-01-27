@@ -1,5 +1,6 @@
 "use client";
 
+import {useRef} from "react";
 import {Container} from "@/components/Container";
 import {
     BasicEventCard,
@@ -8,6 +9,9 @@ import {
     TopEventCard
 } from "@/components/failure-tree/EventCard";
 import {AndGate, OrGate} from "@/components/failure-tree/Gates";
+import {ConnectorLayer, TreeEdge} from "@/components/failure-tree/ConnectorLayer";
+import {NodeRegistryProvider} from "@/components/failure-tree/NodeRegistry";
+import {TreeNode} from "@/components/failure-tree/TreeNode";
 import {FailureEvent} from "@/types/failureTree";
 
 export const FailureTreePanel = () => {
@@ -60,42 +64,56 @@ export const FailureTreePanel = () => {
         },
     };
 
+    const edges: TreeEdge[] = [
+        {from: "top-event", to: "gate-and"},
+        {from: "gate-and", to: "failure-mode"},
+        {from: "gate-and", to: "intermediate"},
+        {from: "failure-mode", to: "gate-or"},
+        {from: "gate-or", to: "temp"},
+        {from: "gate-or", to: "valve"},
+        {from: "gate-or", to: "operator"},
+    ];
+
+    const containerRef = useRef<HTMLDivElement>(null);
+
     return (
         <Container>
-            <div className="flex flex-col items-center gap-6 text-white/80">
-                <p className="text-sm text-white/60">Prototype tree view using basic event cards and Boolean gates.</p>
-                <AndGate
-                    outputs={[
-                        <div key="top" className="w-full max-w-xs">
-                            <TopEventCard event={events.top} highlight />
-                        </div>,
-                    ]}
-                    inputs={[
-                        <OrGate
-                            key="or"
-                            outputs={[
-                                <div key="fm-card" className="w-full max-w-xs">
-                                    <FailureModeCard event={events.failureMode} />
-                                </div>,
-                            ]}
-                            inputs={[
-                                <div key="temp" className="w-full max-w-xs">
-                                    <BasicEventCard event={events.tempSpike} />
-                                </div>,
-                                <div key="valve" className="w-full max-w-xs">
-                                    <BasicEventCard event={events.valveClog} />
-                                </div>,
-                                <div key="operator" className="w-full max-w-xs">
-                                    <BasicEventCard event={events.operatorMiss} />
-                                </div>,
-                            ]}
-                        />,
-                        <div key="intermediate" className="w-full max-w-xs">
+            <NodeRegistryProvider>
+                <div ref={containerRef} className="relative flex flex-col items-center gap-10 text-white/80">
+                    <ConnectorLayer containerRef={containerRef} edges={edges} />
+                    <div className="text-sm text-white/60">
+                        Manual tree layout with SVG connectors drawn per edge.
+                    </div>
+                    <TreeNode id="top-event" className="z-10">
+                        <TopEventCard event={events.top} highlight />
+                    </TreeNode>
+                    <TreeNode id="gate-and" className="z-10">
+                        <AndGate />
+                    </TreeNode>
+                    <div className="grid gap-8 lg:grid-cols-2">
+                        <TreeNode id="failure-mode" className="z-10 flex justify-center">
+                            <FailureModeCard event={events.failureMode} />
+                        </TreeNode>
+                        <TreeNode id="intermediate" className="z-10 flex justify-center">
                             <IntermediateEventCard event={events.intermediate} />
-                        </div>,
-                    ]}
-                />
-            </div>
+                        </TreeNode>
+                    </div>
+                    <TreeNode id="gate-or" className="z-10">
+                        <OrGate />
+                    </TreeNode>
+                    <div className="grid gap-6 lg:grid-cols-3">
+                        <TreeNode id="temp" className="z-10 flex justify-center">
+                            <BasicEventCard event={events.tempSpike} />
+                        </TreeNode>
+                        <TreeNode id="valve" className="z-10 flex justify-center">
+                            <BasicEventCard event={events.valveClog} />
+                        </TreeNode>
+                        <TreeNode id="operator" className="z-10 flex justify-center">
+                            <BasicEventCard event={events.operatorMiss} />
+                        </TreeNode>
+                    </div>
+                </div>
+            </NodeRegistryProvider>
         </Container>
     );
 };
