@@ -7,3 +7,4 @@ export * from "./parts";
 export * from "./part_links";
 export * from "./sensor_readings";
 export * from "./actuator_states";
+export * from "./failure_events";
