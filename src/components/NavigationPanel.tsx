@@ -1,6 +1,7 @@
 'use client'
 
 import {JSX, useEffect, useState} from "react";
+import {useNotifications} from "@/context/NotificationsContext";
 import {
     faBell as faBellRegular,
     faComment as faCommentRegular,
@@ -60,6 +61,7 @@ export const NavigationPanel = ({
 }) => {
   const [internalNav, setInternalNav] = useState<NavOptions>("");
   const currentNavSelectedNavOptions = currentNav ?? internalNav;
+  const {autoOpenRequested, clearAutoOpen} = useNotifications();
 
   const handleNavClick = (newState: NavOptions) => {
     const next = currentNavSelectedNavOptions !== newState ? newState : "";
@@ -81,12 +83,15 @@ export const NavigationPanel = ({
   const isOpen = currentNavSelectedNavOptions !== "";
 
   useEffect(() => {
-    if (isOpen) return;
-    const active = document.activeElement;
-    if (active instanceof HTMLElement) {
-      active.blur();
-    }
-  }, [isOpen]);
+      if (!autoOpenRequested) return;
+      if (onNavChange) {
+        onNavChange('notifications');
+      } else {
+        setInternalNav('notifications');
+      }
+      clearAutoOpen();
+  }, [autoOpenRequested, clearAutoOpen, onNavChange]);
+
 
   return (
     <div className="sticky top-0 h-screen flex self-stretch">

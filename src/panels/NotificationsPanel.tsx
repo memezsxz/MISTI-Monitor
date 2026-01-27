@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Notification } from "@/db/schema";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircle,
@@ -9,21 +8,13 @@ import {
   faExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import clsx from "clsx";
-import { getCacheWindowMs } from "@/lib/dataRefresh";
-
-type NotificationPayload = {
-  active: Notification[];
-  history: Notification[];
-};
+import { useNotifications } from "@/context/NotificationsContext";
+import { Notification } from "@/db/schema";
 
 export const NotificationsPanel = () => {
-  const [payload, setPayload] = useState<NotificationPayload>({ active: [], history: [] });
-  const [error, setError] = useState<string | null>(null);
+  const { payload, error, loading, acknowledge, resolve } = useNotifications();
   const [openIds, setOpenIds] = useState<number[]>([]);
   const [activeTab, setActiveTab] = useState<"active" | "history">("active");
-
-  const cacheRef = useRef<{ data: NotificationPayload; ts: number } | null>(null);
-  const alarmActiveRef = useRef(false);
 
   // refs for tabs
   const activeRef = useRef<HTMLButtonElement | null>(null);
@@ -33,27 +24,6 @@ export const NotificationsPanel = () => {
     left: 0,
     width: 0,
   });
-
-  // audio ref
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  useEffect(() => {
-    const initAudio = () => {
-      audioRef.current = new Audio("/alert.mp3");
-      if (audioRef.current) {
-        audioRef.current.loop = true;
-      }
-      document.removeEventListener("click", initAudio);
-    };
-    document.addEventListener("click", initAudio);
-    return () => document.removeEventListener("click", initAudio);
-  }, []);
-
-  const stopAlarm = useCallback(() => {
-    if (!audioRef.current) return;
-    audioRef.current.pause();
-    audioRef.current.currentTime = 0;
-    alarmActiveRef.current = false;
-  }, []);
 
   const getColor = (level: Notification["level"]) => {
     switch (level) {
@@ -81,85 +51,27 @@ export const NotificationsPanel = () => {
     }
   };
 
-  const fetchNotifications = useCallback(async () => {
-    const cacheWindow = getCacheWindowMs();
-    const now = Date.now();
-    if (cacheRef.current && now - cacheRef.current.ts < cacheWindow) {
-      setPayload(cacheRef.current.data);
-      return;
-    }
-
-    const res = await fetch("/api/notifications", { cache: "no-store" });
-    if (!res.ok) throw new Error(await res.text());
-    const data = (await res.json()) as NotificationPayload;
-    cacheRef.current = { data, ts: Date.now() };
-    setPayload(data);
-  }, []);
-
-  const mutateNotification = useCallback(
-    async (id: number, action: "acknowledge" | "resolve") => {
-      const res = await fetch(`/api/notifications/${id}/${action}`, { method: "POST" });
-      if (!res.ok) throw new Error(await res.text());
-      cacheRef.current = null;
-      await fetchNotifications();
-    },
-    [fetchNotifications],
-  );
-
   const acknowledgeNotification = useCallback(
     async (id: number) => {
       try {
-        await mutateNotification(id, "acknowledge");
-        const hasOtherHighUnacknowledged = payload.active.some(
-          (notification) =>
-            notification.level === "high" && !notification.acknowledgedAt && notification.id !== id,
-        );
-        if (!hasOtherHighUnacknowledged) {
-          stopAlarm();
-        }
-        setError(null);
+        await acknowledge(id);
       } catch (err) {
-        console.error(err);
-        setError("Failed to acknowledge the notification.");
+        console.error("Failed to acknowledge notification", err);
       }
     },
-    [mutateNotification, payload.active, stopAlarm],
+    [acknowledge],
   );
 
   const resolveNotification = useCallback(
     async (id: number) => {
       try {
-        await mutateNotification(id, "resolve");
-        setError(null);
+        await resolve(id);
       } catch (err) {
-        console.error(err);
-        setError("Failed to resolve the notification.");
+        console.error("Failed to resolve notification", err);
       }
     },
-    [mutateNotification],
+    [resolve],
   );
-
-  useEffect(() => {
-    let active = true;
-
-    const fetchData = async () => {
-      try {
-        await fetchNotifications();
-        if (active) setError(null);
-      } catch (err) {
-        console.error(err);
-        if (active) setError("Could not fetch notifications from the database.");
-      }
-    };
-
-    fetchData();
-    const intervalId = window.setInterval(fetchData, getCacheWindowMs());
-
-    return () => {
-      active = false;
-      window.clearInterval(intervalId);
-    };
-  }, [fetchNotifications]);
 
   const refreshUnderline = useCallback(() => {
     const el = activeTab === "active" ? activeRef.current : historyRef.current;
@@ -175,33 +87,7 @@ export const NotificationsPanel = () => {
     refreshUnderline();
   }, [refreshUnderline]);
 
-  useEffect(() => {
-    const hasHighUnacknowledged = payload.active.some(
-      (notification) => notification.level === "high" && !notification.acknowledgedAt,
-    );
-
-    if (hasHighUnacknowledged && audioRef.current && !alarmActiveRef.current) {
-      const playPromise = audioRef.current.play();
-      if (playPromise) {
-        playPromise
-          .then(() => {
-            alarmActiveRef.current = true;
-          })
-          .catch((err) => {
-            alarmActiveRef.current = false;
-            console.error("Failed to play alarm sound", err);
-          });
-      } else {
-        alarmActiveRef.current = true;
-      }
-    }
-
-    if (!hasHighUnacknowledged && alarmActiveRef.current) {
-      stopAlarm();
-    }
-  }, [payload.active, stopAlarm]);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const wrap = tabsWrapRef.current;
     if (!wrap) return;
     const observer = new ResizeObserver(() => refreshUnderline());
@@ -209,6 +95,7 @@ export const NotificationsPanel = () => {
     return () => observer.disconnect();
   }, [refreshUnderline]);
 
+  if (loading) return <p className="text-center text-white/70">Loading notifications…</p>;
   if (error) {
     return <p className="text-center text-red-500 text-xl">{error}</p>;
   }
@@ -316,15 +203,11 @@ export const NotificationsPanel = () => {
                         {!n.resolvedAt && (
                           <button
                             onClick={() =>
-                              isAcknowledged
-                                ? resolveNotification(n.id)
-                                : acknowledgeNotification(n.id)
+                              isAcknowledged ? resolveNotification(n.id) : acknowledgeNotification(n.id)
                             }
                             className={clsx(
                               "px-3 py-1 rounded text-xs font-semibold transition-colors self-end",
-                              isAcknowledged
-                                ? "bg-white/15 hover:bg-white/25 text-white"
-                                : "bg-white/15 hover:bg-white/25 text-white",
+                              "bg-white/15 hover:bg-white/25 text-white",
                             )}
                           >
                             {isAcknowledged ? "Resolve" : "Acknowledge"}
@@ -376,7 +259,6 @@ export const NotificationsPanel = () => {
 
                   <div className="text-right text-xs text-white/60">
                     <div>{new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div>
-                    {/*<div>Resolved</div>*/}
                   </div>
                 </div>
 
