@@ -90,25 +90,25 @@ export const FailureTreePanel = () => {
                     <TreeNode id="gate-and" className="z-10">
                         <AndGate />
                     </TreeNode>
-                    <div className="grid gap-8 lg:grid-cols-2">
-                        <TreeNode id="failure-mode" className="z-10 flex justify-center">
+                    <div className="grid items-start gap-8 lg:grid-cols-2">
+                        <TreeNode id="failure-mode" className="z-10 flex justify-center self-start">
                             <FailureModeCard event={events.failureMode} />
                         </TreeNode>
-                        <TreeNode id="intermediate" className="z-10 flex justify-center">
+                        <TreeNode id="intermediate" className="z-10 flex justify-center self-start">
                             <IntermediateEventCard event={events.intermediate} />
                         </TreeNode>
                     </div>
                     <TreeNode id="gate-or" className="z-10">
                         <OrGate />
                     </TreeNode>
-                    <div className="grid gap-6 lg:grid-cols-3">
-                        <TreeNode id="temp" className="z-10 flex justify-center">
+                    <div className="grid items-start gap-6 lg:grid-cols-3">
+                        <TreeNode id="temp" className="z-10 flex justify-center self-start">
                             <BasicEventCard event={events.tempSpike} />
                         </TreeNode>
-                        <TreeNode id="valve" className="z-10 flex justify-center">
+                        <TreeNode id="valve" className="z-10 flex justify-center self-start">
                             <BasicEventCard event={events.valveClog} />
                         </TreeNode>
-                        <TreeNode id="operator" className="z-10 flex justify-center">
+                        <TreeNode id="operator" className="z-10 flex justify-center self-start">
                             <BasicEventCard event={events.operatorMiss} />
                         </TreeNode>
                     </div>
