@@ -606,14 +606,14 @@ async function seed_sensor_readings() {
     ];
 
     const baseValues: Record<string, number> = {
-        sensor_1: 2.3,
-        sensor_2: 2.1,
-        sensor_3: 2.2,
-        sensor_4: 2.0,
-        sensor_5: 45.0,
-        sensor_6: 46.2,
-        sensor_7: 44.6,
-        sensor_8: 43.9,
+        sensor_1: 320,
+        sensor_2: 40,
+        sensor_3: 300,
+        sensor_4: 310,
+        sensor_5: 42,
+        sensor_6: 320,
+        sensor_7: 41,
+        sensor_8: 305,
     };
 
     const readings: NewSensorReading[] = [];
