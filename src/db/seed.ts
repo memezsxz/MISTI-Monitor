@@ -86,12 +86,14 @@ async function seed_notifications() {
         {
             level: "high",
             title: "Critical flow drop",
-            message: "Flow rate fell sharply below safe threshold. Possible blockage, pump issue, or empty supply."
+            message: "Flow rate fell sharply below safe threshold. Possible blockage, pump issue, or empty supply.",
+            acknowledgedAt: formatLocalDateTime(Date.now() - 1000 * 60 * 30),
         },
         {
             level: "high",
             title: "Overtemperature risk",
-            message: "Temperature exceeded the configured safe limit. Stop system and verify heating/control components."
+            message: "Temperature exceeded the configured safe limit. Stop system and verify heating/control components.",
+            acknowledgedAt: formatLocalDateTime(Date.now() - 1000 * 60 * 20),
         },
     ]);
 

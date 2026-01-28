@@ -39,6 +39,7 @@ const V_SPACING = 210;
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 2;
 const DEFAULT_COLLAPSE_DEPTH = 4;
+const FOCUS_EXPAND_DEPTH = 2;
 
 const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVariant): FailureEvent => {
     const probability = node.probability ?? undefined;
@@ -218,6 +219,27 @@ const buildDefaultCollapsed = (forest: RenderTreeNode[]): Set<string> => {
     return collapsed;
 };
 
+const normalizeKey = (value: string) => value.trim().toLowerCase();
+
+const notificationFocusMap: Record<string, string> = {
+    "critical flow drop": "Low Flow",
+    "overtemperature risk": "Temperature Above Normal Conditions",
+    "temperature drift detected": "Temperature Under Normal Conditions",
+    "flow instability": "Flow out of normal conditions",
+    "possible valve restriction": "Blockage in original route",
+    "possible leak detected": "Leaks",
+    "possible blockage detected": "Blockage in original route",
+    "over-temperature pattern": "Temperature Above Normal Conditions",
+    "pump failure signature": "Broken pump",
+};
+
+const resolveNotificationEventId = (data: FailureTreeData, title: string): string | null => {
+    const mappedName = notificationFocusMap[normalizeKey(title)] ?? title;
+    const target = normalizeKey(mappedName);
+    const match = data.nodes.find((node) => normalizeKey(node.name) === target);
+    return match?.id ?? null;
+};
+
 const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; height: number} | null => {
     if (nodes.length === 0) return null;
     const xs = nodes.map((node) => node.position.x);
@@ -232,16 +254,19 @@ const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; h
     };
 };
 
-export const FailureTreePanel = () => {
+export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement>(null);
     const anchorRef = useRef<{id: string; offsetX: number; offsetY: number} | null>(null);
+    const pendingFocusTitleRef = useRef<string | null>(null);
+    const focusRenderIdRef = useRef<string | null>(null);
     const [data, setData] = useState<FailureTreeData | null>(null);
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1);
     const [autoFit, setAutoFit] = useState(true);
+    const [focusEventId, setFocusEventId] = useState<string | null>(null);
     const zoomRef = useRef(1);
 
     useEffect(() => {
@@ -268,6 +293,18 @@ export const FailureTreePanel = () => {
             active = false;
         };
     }, []);
+
+    useEffect(() => {
+        if (!focusTitle) return;
+        if (!data) {
+            pendingFocusTitleRef.current = focusTitle;
+            return;
+        }
+        const eventId = resolveNotificationEventId(data, focusTitle);
+        if (eventId) {
+            setFocusEventId(eventId);
+        }
+    }, [focusTitle, data]);
 
     useEffect(() => {
         zoomRef.current = zoom;
@@ -306,7 +343,7 @@ export const FailureTreePanel = () => {
             if (!event.ctrlKey) return;
             event.preventDefault();
             setAutoFit(false);
-            const zoomSpeed = 0.0015;
+            const zoomSpeed = 0.015;
             const factor = Math.exp(-event.deltaY * zoomSpeed);
             const nextZoom = Math.min(Math.max(zoomRef.current * factor, MIN_ZOOM), MAX_ZOOM);
             zoomTo(nextZoom, {x: event.clientX, y: event.clientY});
@@ -331,6 +368,17 @@ export const FailureTreePanel = () => {
         setCollapsed(defaults);
         setAutoFit(true);
     }, [forest]);
+
+    useEffect(() => {
+        if (!data) return;
+        const pending = pendingFocusTitleRef.current;
+        if (!pending) return;
+        const eventId = resolveNotificationEventId(data, pending);
+        pendingFocusTitleRef.current = null;
+        if (eventId) {
+            setFocusEventId(eventId);
+        }
+    }, [data]);
     const layoutResult = useMemo(() => layoutForest(forest, collapsed), [forest, collapsed]);
 
     const layoutBounds = useMemo(
@@ -367,10 +415,80 @@ export const FailureTreePanel = () => {
         anchorRef.current = null;
     }, [layoutResult]);
 
+    useLayoutEffect(() => {
+        if (!focusRenderIdRef.current) return;
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+        const el = viewport.querySelector<HTMLElement>(`[data-node-id="${focusRenderIdRef.current}"]`);
+        if (!el) return;
+        const elRect = el.getBoundingClientRect();
+        const viewRect = viewport.getBoundingClientRect();
+        const centerX = elRect.left + elRect.width / 2 - viewRect.left;
+        const centerY = elRect.top + elRect.height / 2 - viewRect.top;
+        viewport.scrollLeft += centerX - viewRect.width / 2;
+        viewport.scrollTop += centerY - viewRect.height / 2;
+        focusRenderIdRef.current = null;
+    }, [layoutResult]);
+
     const edges: TreeEdge[] = useMemo(() => {
         if (!layoutResult) return [];
         return layoutResult.edges.map((edge) => ({from: edge.fromEventId, to: edge.toEventId}));
     }, [layoutResult]);
+
+    useEffect(() => {
+        if (!focusEventId || forest.length === 0) return;
+        const collapsedSet = new Set<string>();
+        let focusedRenderId: string | null = null;
+
+        const isGate = (node: RenderTreeNode) =>
+            node.payload.kind === "gate_and" || node.payload.kind === "gate_or";
+
+        const markAllWithChildren = (node: RenderTreeNode) => {
+            if (node.children.length > 0 && !isGate(node)) {
+                collapsedSet.add(node.renderId);
+            }
+            node.children.forEach((child) => markAllWithChildren(child.node));
+        };
+
+        forest.forEach((tree) => markAllWithChildren(tree));
+
+        const expandDown = (node: RenderTreeNode, depth: number) => {
+            if (depth < 0 && !isGate(node)) return;
+            collapsedSet.delete(node.renderId);
+            const nextDepth = isGate(node) ? depth : depth - 1;
+            node.children.forEach((child) => expandDown(child.node, nextDepth));
+        };
+
+        const walk = (node: RenderTreeNode, ancestors: RenderTreeNode[]): boolean => {
+            let matched =
+                (node.payload.sourceEventId ?? node.sourceId) === focusEventId ||
+                node.payload.id === focusEventId;
+
+            for (const child of node.children) {
+                if (walk(child.node, [...ancestors, node])) {
+                    matched = true;
+                }
+            }
+
+            if (matched) {
+                ancestors.forEach((ancestor) => collapsedSet.delete(ancestor.renderId));
+                collapsedSet.delete(node.renderId);
+                if (!focusedRenderId) {
+                    focusedRenderId = node.renderId;
+                    expandDown(node, FOCUS_EXPAND_DEPTH);
+                }
+            }
+            return matched;
+        };
+
+        forest.forEach((tree) => {
+            walk(tree, []);
+        });
+
+        setCollapsed(collapsedSet);
+        setAutoFit(true);
+        focusRenderIdRef.current = focusedRenderId;
+    }, [focusEventId, forest]);
 
     const toggleCollapse = useCallback((renderId: string) => {
         const viewport = viewportRef.current;

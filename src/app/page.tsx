@@ -11,9 +11,12 @@ export default function Home() {
     const [currentNav, setCurrentNav] = useState<"" | "notifications" | "comments" | "notes" | "info">("");
     const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
     const [panelMode, setPanelMode] = useState<"plan" | "failure">("plan");
+    const [failureTreeFocusTitle, setFailureTreeFocusTitle] = useState<string | null>(null);
 
     useEffect(() => {
-        const handler = () => {
+        const handler = (event: Event) => {
+            const detail = (event as CustomEvent).detail as { title?: string } | undefined;
+            setFailureTreeFocusTitle(detail?.title ?? null);
             setPanelMode("failure");
         };
         window.addEventListener("show-failure-tree", handler);
@@ -66,7 +69,7 @@ export default function Home() {
                             ) : (
                                 <Container>
                                     <div className="min-w-0 max-w-full">
-                                        <FailureTreePanel />
+                                        <FailureTreePanel focusTitle={failureTreeFocusTitle} />
                                     </div>
                                 </Container>
                             )}

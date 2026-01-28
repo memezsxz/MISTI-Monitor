@@ -206,11 +206,13 @@ export const NotificationsPanel = () => {
                           {n.level === "high" && (
                             <button
                               type="button"
-                              onClick={() =>
-                                window.dispatchEvent(
-                                  new CustomEvent("show-failure-tree", { detail: { notificationId: n.id } }),
-                                )
-                              }
+                            onClick={() =>
+                              window.dispatchEvent(
+                                new CustomEvent("show-failure-tree", {
+                                  detail: { notificationId: n.id, title: n.title, level: n.level },
+                                }),
+                              )
+                            }
                               className={clsx(
                                 "px-3 py-1 rounded text-xs font-semibold transition-colors",
                                 "border border-rose-300/40 bg-rose-500/10 text-rose-100 hover:border-rose-300/70 hover:bg-rose-500/20",
