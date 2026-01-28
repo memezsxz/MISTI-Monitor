@@ -607,12 +607,12 @@ async function seed_sensor_readings() {
 
     const baseValues: Record<string, number> = {
         sensor_1: 320,
-        sensor_2: 40,
+        sensor_2: 30,
         sensor_3: 300,
         sensor_4: 310,
-        sensor_5: 42,
+        sensor_5: 32,
         sensor_6: 320,
-        sensor_7: 41,
+        sensor_7: 31,
         sensor_8: 305,
     };
 
