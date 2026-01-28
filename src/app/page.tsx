@@ -5,6 +5,7 @@ import {FailureTreePanel} from "@/panels/FailureTreePanel";
 import {PumpPlanPanel} from "@/panels/PumpPlanPanel";
 import {useState} from "react";
 import clsx from "clsx";
+import {Container} from "@/components/Container";
 
 export default function Home() {
     const [currentNav, setCurrentNav] = useState<"" | "notifications" | "comments" | "notes" | "info">("");
@@ -53,7 +54,11 @@ export default function Home() {
                                     }}
                                 />
                             ) : (
-                                <FailureTreePanel />
+                                <Container>
+                                    <div className="min-w-0 max-w-full">
+                                        <FailureTreePanel />
+                                    </div>
+                                </Container>
                             )}
                         </div>
                     </main>

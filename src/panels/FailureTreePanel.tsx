@@ -1,7 +1,6 @@
 "use client";
 
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Container} from "@/components/Container";
+import {JSX, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
     BasicEventCard,
     FailureEventVariant,
@@ -321,45 +320,43 @@ export const FailureTreePanel = () => {
         });
     }, [layoutResult, collapsed, toggleCollapse]);
 
-    const description = "Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.";
 
     return (
-        <Container>
-            <NodeRegistryProvider>
-                <div className="relative flex w-full flex-col gap-4 text-white/80">
-                    <div className="text-sm text-white/60">{description}</div>
-
-                    <div className="relative w-full overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
-                        <div
-                            ref={containerRef}
-                            className="relative mx-auto"
-                            style={
-                                layoutBounds
-                                    ? {width: `${layoutBounds.width}px`, height: `${layoutBounds.height}px`}
-                                    : {minHeight: "320px"}
-                            }
-                        >
-                            {layoutBounds && <ConnectorLayer containerRef={containerRef} edges={edges} />}
-                            {nodes}
-                            {loading && (
-                                <div className="absolute left-4 top-4 rounded-md bg-zinc-900/80 px-3 py-2 text-xs text-white/70">
-                                    Loading tree…
-                                </div>
-                            )}
-                            {error && !loading && (
-                                <div className="absolute left-4 top-4 rounded-md bg-red-900/80 px-3 py-2 text-xs text-white/90">
-                                    {error}
-                                </div>
-                            )}
-                            {!loading && !error && nodes.length === 0 && (
-                                <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
-                                    No failure tree data available.
-                                </div>
-                            )}
-                        </div>
+        <NodeRegistryProvider>
+            <div className="relative w-full max-w-full min-w-0 min-h-0 flex flex-col gap-4 text-white/80">
+                <div className="text-sm text-white/60 flex-none">
+                    Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.
+                </div>
+                <div className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
+                    <div
+                        ref={containerRef}
+                        className="relative inline-block"
+                        style={
+                            layoutBounds
+                                ? {width: `${layoutBounds.width}px`, height: `${layoutBounds.height}px`}
+                                : {minHeight: "320px"}
+                        }
+                    >
+                        {layoutBounds && <ConnectorLayer containerRef={containerRef} edges={edges} />}
+                        {nodes}
+                        {loading && (
+                            <div className="absolute left-4 top-4 rounded-md bg-zinc-900/80 px-3 py-2 text-xs text-white/70">
+                                Loading tree…
+                            </div>
+                        )}
+                        {error && !loading && (
+                            <div className="absolute left-4 top-4 rounded-md bg-red-900/80 px-3 py-2 text-xs text-white/90">
+                                {error}
+                            </div>
+                        )}
+                        {!loading && !error && nodes.length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
+                                No failure tree data available.
+                            </div>
+                        )}
                     </div>
                 </div>
-            </NodeRegistryProvider>
-        </Container>
+            </div>
+        </NodeRegistryProvider>
     );
 };
