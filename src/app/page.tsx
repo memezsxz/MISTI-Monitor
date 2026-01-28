@@ -3,7 +3,7 @@
 import {NavigationPanel} from "@/components/NavigationPanel";
 import {FailureTreePanel} from "@/panels/FailureTreePanel";
 import {PumpPlanPanel} from "@/panels/PumpPlanPanel";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import clsx from "clsx";
 import {Container} from "@/components/Container";
 
@@ -12,6 +12,22 @@ export default function Home() {
     const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
     const [panelMode, setPanelMode] = useState<"plan" | "failure">("plan");
     const [failureTreeFocusTitle, setFailureTreeFocusTitle] = useState<string | null>(null);
+    const [failureTreeViewState, setFailureTreeViewState] = useState<{
+        zoom: number;
+        collapsed: string[];
+        scrollLeft: number;
+        scrollTop: number;
+    } | null>(null);
+    const [failureTreeStateTouched, setFailureTreeStateTouched] = useState(false);
+    const handleFailureTreeViewState = useCallback((next: {
+        zoom: number;
+        collapsed: string[];
+        scrollLeft: number;
+        scrollTop: number;
+    }) => {
+        setFailureTreeStateTouched(true);
+        setFailureTreeViewState(next);
+    }, []);
 
     useEffect(() => {
         const handler = (event: Event) => {
@@ -69,7 +85,12 @@ export default function Home() {
                             ) : (
                                 <Container>
                                     <div className="min-w-0 max-w-full">
-                                        <FailureTreePanel focusTitle={failureTreeFocusTitle} />
+                                        <FailureTreePanel
+                                            focusTitle={failureTreeFocusTitle}
+                                            viewState={failureTreeStateTouched ? failureTreeViewState : null}
+                                            onViewStateChange={handleFailureTreeViewState}
+                                            onFocusHandled={() => setFailureTreeFocusTitle(null)}
+                                        />
                                     </div>
                                 </Container>
                             )}

@@ -41,6 +41,9 @@ const MAX_ZOOM = 2;
 const DEFAULT_COLLAPSE_DEPTH = 4;
 const FOCUS_EXPAND_DEPTH = 2;
 
+const isGateKind = (kind: FailureTreeNodePayload["kind"]) => kind === "gate_and" || kind === "gate_or";
+const isGateNode = (node: RenderTreeNode) => isGateKind(node.payload.kind);
+
 const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVariant): FailureEvent => {
     const probability = node.probability ?? undefined;
     const severity = node.severity ?? undefined;
@@ -208,14 +211,15 @@ const buildDefaultCollapsed = (forest: RenderTreeNode[]): Set<string> => {
     const collapsed = new Set<string>();
 
     const walk = (node: RenderTreeNode, depth: number) => {
-        if (depth >= DEFAULT_COLLAPSE_DEPTH && node.children.length > 0) {
+        const nextDepth = depth + (isGateNode(node) ? 0 : 1);
+        if (!isGateNode(node) && nextDepth >= DEFAULT_COLLAPSE_DEPTH && node.children.length > 0) {
             collapsed.add(node.renderId);
             return;
         }
-        node.children.forEach((child) => walk(child.node, depth + 1));
+        node.children.forEach((child) => walk(child.node, nextDepth));
     };
 
-    forest.forEach((tree) => walk(tree, 0));
+    forest.forEach((tree) => walk(tree, -1));
     return collapsed;
 };
 
@@ -254,7 +258,24 @@ const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; h
     };
 };
 
-export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => {
+type FailureTreeViewState = {
+    zoom: number;
+    collapsed: string[];
+    scrollLeft: number;
+    scrollTop: number;
+};
+
+export const FailureTreePanel = ({
+    focusTitle,
+    viewState,
+    onViewStateChange,
+    onFocusHandled,
+}: {
+    focusTitle?: string | null;
+    viewState?: FailureTreeViewState | null;
+    onViewStateChange?: (next: FailureTreeViewState) => void;
+    onFocusHandled?: () => void;
+}) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement>(null);
     const anchorRef = useRef<{id: string; offsetX: number; offsetY: number} | null>(null);
@@ -268,6 +289,8 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
     const [autoFit, setAutoFit] = useState(true);
     const [focusEventId, setFocusEventId] = useState<string | null>(null);
     const zoomRef = useRef(1);
+    const restoredRef = useRef(false);
+    const scrollRef = useRef({left: 0, top: 0});
 
     useEffect(() => {
         let active = true;
@@ -303,8 +326,9 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         const eventId = resolveNotificationEventId(data, focusTitle);
         if (eventId) {
             setFocusEventId(eventId);
+            onFocusHandled?.();
         }
-    }, [focusTitle, data]);
+    }, [focusTitle, data, onFocusHandled]);
 
     useEffect(() => {
         zoomRef.current = zoom;
@@ -332,8 +356,17 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         requestAnimationFrame(() => {
             viewport.scrollLeft = contentX * nextZoom - offsetX;
             viewport.scrollTop = contentY * nextZoom - offsetY;
+            scrollRef.current = {left: viewport.scrollLeft, top: viewport.scrollTop};
+            if (onViewStateChange) {
+                onViewStateChange({
+                    zoom: nextZoom,
+                    collapsed: Array.from(collapsed),
+                    scrollLeft: viewport.scrollLeft,
+                    scrollTop: viewport.scrollTop,
+                });
+            }
         });
-    }, []);
+    }, [collapsed, onViewStateChange]);
 
     useEffect(() => {
         const viewport = viewportRef.current;
@@ -349,25 +382,41 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
             zoomTo(nextZoom, {x: event.clientX, y: event.clientY});
         };
 
+        let raf = 0;
+        const onScroll = () => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                scrollRef.current = {left: viewport.scrollLeft, top: viewport.scrollTop};
+                if (onViewStateChange) {
+                    onViewStateChange({
+                        zoom: zoomRef.current,
+                        collapsed: Array.from(collapsed),
+                        scrollLeft: viewport.scrollLeft,
+                        scrollTop: viewport.scrollTop,
+                    });
+                }
+            });
+        };
+
         viewport.addEventListener("wheel", onWheel, {passive: false});
+        viewport.addEventListener("scroll", onScroll);
         return () => {
             viewport.removeEventListener("wheel", onWheel);
+            viewport.removeEventListener("scroll", onScroll);
+            if (raf) cancelAnimationFrame(raf);
         };
-    }, []);
-
-    useEffect(() => {
-        setCollapsed(new Set());
-        setAutoFit(true);
-    }, [data]);
+    }, [collapsed, onViewStateChange, zoomTo]);
 
     const forest = useMemo(() => buildRenderForest(data), [data]);
 
     useEffect(() => {
         if (forest.length === 0) return;
-        const defaults = buildDefaultCollapsed(forest);
-        setCollapsed(defaults);
-        setAutoFit(true);
-    }, [forest]);
+        if (!restoredRef.current && !viewState) {
+            const defaults = buildDefaultCollapsed(forest);
+            setCollapsed(defaults);
+            setAutoFit(true);
+        }
+    }, [forest, viewState]);
 
     useEffect(() => {
         if (!data) return;
@@ -377,8 +426,9 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         pendingFocusTitleRef.current = null;
         if (eventId) {
             setFocusEventId(eventId);
+            onFocusHandled?.();
         }
-    }, [data]);
+    }, [data, onFocusHandled]);
     const layoutResult = useMemo(() => layoutForest(forest, collapsed), [forest, collapsed]);
 
     const layoutBounds = useMemo(
@@ -387,6 +437,33 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
     );
 
     useLayoutEffect(() => {
+        if (restoredRef.current) return;
+        if (!viewState || !viewportRef.current) return;
+        restoredRef.current = true;
+        setAutoFit(false);
+        setZoom(viewState.zoom);
+        setCollapsed(new Set(viewState.collapsed));
+        requestAnimationFrame(() => {
+            if (!viewportRef.current) return;
+            viewportRef.current.scrollLeft = viewState.scrollLeft;
+            viewportRef.current.scrollTop = viewState.scrollTop;
+            scrollRef.current = {left: viewState.scrollLeft, top: viewState.scrollTop};
+        });
+    }, [viewState]);
+
+    const nodeDepthMap = useMemo(() => {
+        const depths = new Map<string, number>();
+        const walk = (node: RenderTreeNode, depth: number) => {
+            const nextDepth = depth + (isGateNode(node) ? 0 : 1);
+            depths.set(node.renderId, nextDepth);
+            node.children.forEach((child) => walk(child.node, nextDepth));
+        };
+        forest.forEach((tree) => walk(tree, -1));
+        return depths;
+    }, [forest]);
+
+    useLayoutEffect(() => {
+        if (viewState) return;
         if (!autoFit) return;
         if (!layoutBounds || !viewportRef.current) return;
         const {width: viewW, height: viewH} = viewportRef.current.getBoundingClientRect();
@@ -440,11 +517,8 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         const collapsedSet = new Set<string>();
         let focusedRenderId: string | null = null;
 
-        const isGate = (node: RenderTreeNode) =>
-            node.payload.kind === "gate_and" || node.payload.kind === "gate_or";
-
         const markAllWithChildren = (node: RenderTreeNode) => {
-            if (node.children.length > 0 && !isGate(node)) {
+            if (node.children.length > 0 && !isGateNode(node)) {
                 collapsedSet.add(node.renderId);
             }
             node.children.forEach((child) => markAllWithChildren(child.node));
@@ -453,9 +527,9 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         forest.forEach((tree) => markAllWithChildren(tree));
 
         const expandDown = (node: RenderTreeNode, depth: number) => {
-            if (depth < 0 && !isGate(node)) return;
+            if (depth < 0 && !isGateNode(node)) return;
             collapsedSet.delete(node.renderId);
-            const nextDepth = isGate(node) ? depth : depth - 1;
+            const nextDepth = isGateNode(node) ? depth : depth - 1;
             node.children.forEach((child) => expandDown(child.node, nextDepth));
         };
 
@@ -488,7 +562,30 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
         setCollapsed(collapsedSet);
         setAutoFit(true);
         focusRenderIdRef.current = focusedRenderId;
+        setFocusEventId(null);
     }, [focusEventId, forest]);
+
+    useEffect(() => {
+        if (!onViewStateChange) return;
+        onViewStateChange({
+            zoom,
+            collapsed: Array.from(collapsed),
+            scrollLeft: scrollRef.current.left,
+            scrollTop: scrollRef.current.top,
+        });
+    }, [zoom, collapsed, onViewStateChange]);
+
+    useEffect(() => {
+        return () => {
+            if (!onViewStateChange) return;
+            onViewStateChange({
+                zoom: zoomRef.current,
+                collapsed: Array.from(collapsed),
+                scrollLeft: scrollRef.current.left,
+                scrollTop: scrollRef.current.top,
+            });
+        };
+    }, [collapsed, onViewStateChange]);
 
     const toggleCollapse = useCallback((renderId: string) => {
         const viewport = viewportRef.current;
@@ -514,6 +611,57 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
             return next;
         });
     }, []);
+
+    const handleExpandNextLevel = useCallback(() => {
+        setCollapsed((prev) => {
+            if (prev.size === 0) return prev;
+            let minDepth = Infinity;
+            prev.forEach((id) => {
+                const depth = nodeDepthMap.get(id);
+                if (depth !== undefined && depth < minDepth) {
+                    minDepth = depth;
+                }
+            });
+            if (!Number.isFinite(minDepth)) return prev;
+            const next = new Set(prev);
+            prev.forEach((id) => {
+                if (nodeDepthMap.get(id) === minDepth) {
+                    next.delete(id);
+                }
+            });
+            return next;
+        });
+    }, [nodeDepthMap]);
+
+    const handleCollapseNextLevel = useCallback(() => {
+        setCollapsed((prev) => {
+            if (!layoutResult) return prev;
+            const {childMap} = layoutResult;
+            const expandedWithChildren: string[] = [];
+            layoutResult.nodes.forEach((node) => {
+                if (isGateKind(node.kind)) return;
+                if (!childMap.has(node.id)) return;
+                if (prev.has(node.id)) return;
+                expandedWithChildren.push(node.id);
+            });
+            if (expandedWithChildren.length === 0) return prev;
+            let maxDepth = -Infinity;
+            expandedWithChildren.forEach((id) => {
+                const depth = nodeDepthMap.get(id);
+                if (depth !== undefined && depth > maxDepth) {
+                    maxDepth = depth;
+                }
+            });
+            if (!Number.isFinite(maxDepth)) return prev;
+            const next = new Set(prev);
+            expandedWithChildren.forEach((id) => {
+                if (nodeDepthMap.get(id) === maxDepth) {
+                    next.add(id);
+                }
+            });
+            return next;
+        });
+    }, [layoutResult, nodeDepthMap]);
 
     const handleZoomIn = useCallback(() => {
         setAutoFit(false);
@@ -570,7 +718,7 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
                                 type="button"
                                 aria-label={isCollapsed ? "Expand branch" : "Collapse branch"}
                                 onClick={() => toggleCollapse(node.id)}
-                                className="absolute left-1/2 top-full mt-2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-sky-300/50 bg-zinc-950/60 text-xs text-white/80 transition hover:border-sky-200 hover:bg-sky-500/10"
+                                className="absolute left-1/2 top-full mt-2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border  bg-zinc-950/60 text-xs text-white/80 transition hover:border-white/40 hover:bg-sky-500/10"
                             >
                                 {isCollapsed ? "+" : "−"}
                             </button>
@@ -585,17 +733,41 @@ export const FailureTreePanel = ({focusTitle}: {focusTitle?: string | null}) => 
     return (
         <NodeRegistryProvider>
             <div className="relative w-full max-w-full min-w-0 min-h-0 flex flex-col gap-4 text-white/80">
-                <div className="flex w-full items-start gap-4">
-                    <div className="ml-auto flex items-center gap-2 rounded-full border border-sky-400/40 bg-zinc-950/50 px-3 py-1 text-xs text-white/70 shadow-sm shadow-sky-900/30">
-                        <button type="button" onClick={handleZoomOut} className="px-2 py-1 hover:text-white">−</button>
-                        <span>{Math.round(zoom * 100)}%</span>
-                        <button type="button" onClick={handleZoomIn} className="px-2 py-1 hover:text-white">+</button>
-                        <button type="button" onClick={handleZoomFit} className="px-2 py-1 hover:text-white">Fit</button>
+                <div className="flex w-full items-start">
+                    <div className="ml-auto flex items-center gap-2">
+                        <div className="flex items-center gap-1 rounded-full border border-white/40 bg-zinc-950/50 px-2 py-1 text-xs text-white/70 shadow-sm shadow-sky-900/30">
+                            <button
+                                type="button"
+                                aria-label="Collapse next level"
+                                onClick={handleCollapseNextLevel}
+                                className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/10 hover:text-white"
+                            >
+                                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Expand next level"
+                                onClick={handleExpandNextLevel}
+                                className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/10 hover:text-white"
+                            >
+                                <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M5 12l5-5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="flex items-center gap-2 rounded-full border border-white/40 bg-zinc-950/50 px-3 py-1 text-xs text-white/70 shadow-sm border-white/30">
+                            <button type="button" onClick={handleZoomOut} className="rounded px-2 py-1 hover:bg-white/10 hover:text-white">−</button>
+                            <span>{Math.round(zoom * 100)}%</span>
+                            <button type="button" onClick={handleZoomIn} className="rounded px-2 py-1 hover:bg-white/10 hover:text-white">+</button>
+                            <button type="button" onClick={handleZoomFit} className="rounded px-2 py-1 hover:bg-white/10 hover:text-white">Fit</button>
+                        </div>
                     </div>
                 </div>
                 <div
                     ref={viewportRef}
-                    className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-sky-500/10 bg-zinc-950/30 px-2 py-6"
+                    className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-white/10 bg-zinc-950/30 px-2 py-6"
                 >
                     <div
                         className="relative inline-block"
