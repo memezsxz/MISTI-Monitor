@@ -192,7 +192,7 @@ export const NotificationsPanel = () => {
                     </div>
                     <p>{n.message}</p>
 
-                    <div className="flex justify-end pt-2">
+                    <div className="space-y-2 pt-2">
                       <div className="flex flex-col items-end gap-2 text-xs text-white/70">
                         {n.acknowledgedAt && (
                           <p>Acknowledged: {new Date(n.acknowledgedAt).toLocaleString()}</p>
@@ -200,13 +200,33 @@ export const NotificationsPanel = () => {
                         {n.resolvedAt && (
                           <p>Resolved: {new Date(n.resolvedAt).toLocaleString()}</p>
                         )}
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          {n.level === "high" && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                window.dispatchEvent(
+                                  new CustomEvent("show-failure-tree", { detail: { notificationId: n.id } }),
+                                )
+                              }
+                              className={clsx(
+                                "px-3 py-1 rounded text-xs font-semibold transition-colors",
+                                "border border-rose-300/40 bg-rose-500/10 text-rose-100 hover:border-rose-300/70 hover:bg-rose-500/20",
+                              )}
+                            >
+                              View Failure Tree
+                            </button>
+                          )}
+                        </div>
                         {!n.resolvedAt && (
                           <button
                             onClick={() =>
                               isAcknowledged ? resolveNotification(n.id) : acknowledgeNotification(n.id)
                             }
                             className={clsx(
-                              "px-3 py-1 rounded text-xs font-semibold transition-colors self-end",
+                              "px-3 py-1 rounded text-xs font-semibold transition-colors",
                               "bg-white/15 hover:bg-white/25 text-white",
                             )}
                           >

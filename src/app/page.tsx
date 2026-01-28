@@ -3,7 +3,7 @@
 import {NavigationPanel} from "@/components/NavigationPanel";
 import {FailureTreePanel} from "@/panels/FailureTreePanel";
 import {PumpPlanPanel} from "@/panels/PumpPlanPanel";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import clsx from "clsx";
 import {Container} from "@/components/Container";
 
@@ -11,6 +11,16 @@ export default function Home() {
     const [currentNav, setCurrentNav] = useState<"" | "notifications" | "comments" | "notes" | "info">("");
     const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
     const [panelMode, setPanelMode] = useState<"plan" | "failure">("plan");
+
+    useEffect(() => {
+        const handler = () => {
+            setPanelMode("failure");
+        };
+        window.addEventListener("show-failure-tree", handler);
+        return () => {
+            window.removeEventListener("show-failure-tree", handler);
+        };
+    }, []);
 
     const style = (type: string) => {
         return `rounded-md px-3 py-1.5 font-semibold ${panelMode === type ? "bg-white/10" : "text-white/70 hover:text-white/90"}`
