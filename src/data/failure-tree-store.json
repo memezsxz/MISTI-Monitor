@@ -1,0 +1,1505 @@
+[
+  {
+    "id": "ecf4386a-76cc-54dd-ac72-a0c0c77de873",
+    "name": "Temperature Above Normal Conditions",
+    "kind": "intermediate",
+    "description": "System temperature exceeds the expected normal operating range; typically indicates heating control issues or reduced cooling effectiveness.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"temperature\",\"threshold\":\"above_normal\",\"note\":\"Intermediate (derived from child events).\"}",
+    "tags": "[\"temperature\",\"abnormal\",\"fluid-loop\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "28f6f9f7-a2ce-5f79-a950-344b97075cc8",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "28f6f9f7-a2ce-5f79-a950-344b97075cc8",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Temperature Above Normal Conditions occurs if any one of the child causes occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"temp_above_normal_conditions\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "2af23678-dbb3-5655-aafc-6c807a534cdb",
+        "name": "Cooling Reservoir Blocked",
+        "kind": "intermediate"
+      },
+      {
+        "id": "0a00fb69-b241-5e47-afde-7f362602c315",
+        "name": "Cooling Reservoir Leakage",
+        "kind": "basic"
+      },
+      {
+        "id": "d0d9fe4f-8dbe-56a3-a934-d79af43993f0",
+        "name": "Recirculation of Alternate Route",
+        "kind": "intermediate"
+      },
+      {
+        "id": "a4cbd6c9-c4a5-59fe-a7dd-141c5a86788a",
+        "name": "Heater Kept On",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "2af23678-dbb3-5655-aafc-6c807a534cdb",
+    "name": "Cooling Reservoir Blocked",
+    "kind": "intermediate",
+    "description": "Cooling reservoir circulation is restricted or blocked, reducing heat removal and increasing system temperature.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"cooling_reservoir\",\"failure\":\"blockage\",\"note\":\"Intermediate (derived from leaf events).\"}",
+    "tags": "[\"cooling\",\"blockage\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "8f6bdf6b-c1eb-5137-ae92-057d8d0ee5ce",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "0a00fb69-b241-5e47-afde-7f362602c315",
+    "name": "Cooling Reservoir Leakage",
+    "kind": "basic",
+    "description": "Loss of coolant/volume from the cooling reservoir due to leakage, reducing cooling capacity.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"cooling_reservoir\",\"failure\":\"leakage\",\"detection_hint\":\"Monitor level/visual inspection; correlate with temperature rise.\"}",
+    "tags": "[\"cooling\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "d0d9fe4f-8dbe-56a3-a934-d79af43993f0",
+    "name": "Recirculation of Alternate Route",
+    "kind": "intermediate",
+    "description": "Unintended recirculation through an alternate route (e.g., via both bucket paths), potentially increasing temperature due to poor heat rejection or mixing.",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"routing\",\"note\":\"Intermediate driven by simultaneous bucket leaks (AND).\"}",
+    "tags": "[\"routing\",\"recirculation\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "7339bed1-4879-5974-a007-c8b4590f76f6",
+        "name": "AND Gate",
+        "kind": "gate_and"
+      }
+    ]
+  },
+  {
+    "id": "a4cbd6c9-c4a5-59fe-a7dd-141c5a86788a",
+    "name": "Heater Kept On",
+    "kind": "basic",
+    "description": "Heater remains on when it should be off (control fault or operator oversight), elevating system temperature.",
+    "severity": "high",
+    "detection": "high",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"heater\",\"failure\":\"stuck_on\",\"detection_hint\":\"Compare heater state vs setpoint; confirm relay/control signal.\"}",
+    "tags": "[\"heater\",\"control\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "8f6bdf6b-c1eb-5137-ae92-057d8d0ee5ce",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Cooling Reservoir Blocked occurs if any one of the child blockage contributors occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"cooling_reservoir_blocked\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "409b639e-b40f-59b9-a749-f68154b6ee45",
+        "name": "Valves Close",
+        "kind": "basic"
+      },
+      {
+        "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+        "name": "Contamination",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "409b639e-b40f-59b9-a749-f68154b6ee45",
+    "name": "Valves Close",
+    "kind": "basic",
+    "description": "Valve(s) are closed or partially closed, restricting flow and reducing cooling circulation.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.05,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"valve\",\"failure\":\"closed\",\"detection_hint\":\"Check valve position indicators; correlate with flow drop.\"}",
+    "tags": "[\"valve\",\"restriction\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+    "name": "Contamination",
+    "kind": "basic",
+    "description": "Debris/particles in the circuit cause restriction or fouling, reducing cooling effectiveness and potentially blocking passages.",
+    "severity": "high",
+    "detection": "low",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"fluid_loop\",\"failure\":\"contamination\",\"detection_hint\":\"Hard to detect directly; infer from recurring restrictions / inspection.\"}",
+    "tags": "[\"contamination\",\"fouling\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "7339bed1-4879-5974-a007-c8b4590f76f6",
+    "name": "AND Gate",
+    "kind": "gate_and",
+    "description": "AND logic: Recirculation of Alternate Route occurs only when all required conditions occur together (both bucket leaks).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"AND\",\"parent\":\"recirculation_of_alternate_route\"}",
+    "tags": "[\"gate\",\"and\"]",
+    "children": [
+      {
+        "id": "40be22a9-caab-58bf-a1de-2fff69ebcadd",
+        "name": "Bucket 1 leak",
+        "kind": "basic"
+      },
+      {
+        "id": "8c2ae2e4-1592-5433-a747-171ec63c7ba9",
+        "name": "Bucket 2 leak",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "40be22a9-caab-58bf-a1de-2fff69ebcadd",
+    "name": "Bucket 1 leak",
+    "kind": "basic",
+    "description": "Leak in bucket 1 path causes unintended flow behavior or reduced system stability (level drop / air ingress).",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"bucket_1\",\"failure\":\"leak\",\"detection_hint\":\"Visual inspection; level trend; correlate with flow instability.\"}",
+    "tags": "[\"bucket\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "8c2ae2e4-1592-5433-a747-171ec63c7ba9",
+    "name": "Bucket 2 leak",
+    "kind": "basic",
+    "description": "Leak in bucket 2 path causes unintended flow behavior or reduced system stability (level drop / air ingress).",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"bucket_2\",\"failure\":\"leak\",\"detection_hint\":\"Visual inspection; level trend; correlate with flow instability.\"}",
+    "tags": "[\"bucket\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "ddda88c6-1587-5891-af7d-a798ed2ab241",
+    "name": "Temperature Under Normal Conditions",
+    "kind": "intermediate",
+    "description": "System temperature falls below the defined normal operating range; typically indicates excessive cooling or insufficient heating.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"temperature\",\"threshold\":\"under_normal\",\"note\":\"Intermediate (derived from child events).\"}",
+    "tags": "[\"temperature\",\"below-normal\",\"abnormal\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "30898669-522c-50ed-a907-f27f86128a51",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "30898669-522c-50ed-a907-f27f86128a51",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Temperature Under Normal Conditions occurs if any one of the child causes occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"temp_under_normal_conditions\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "e9a57fd5-4933-5dcb-a863-07c6a1bf7ea7",
+        "name": "Excessive Cooling Duration",
+        "kind": "intermediate"
+      },
+      {
+        "id": "a7aa40ec-304f-5aa9-aae0-495ca2eacd77",
+        "name": "Heater kept off",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "e9a57fd5-4933-5dcb-a863-07c6a1bf7ea7",
+    "name": "Excessive Cooling Duration",
+    "kind": "intermediate",
+    "description": "Cooling is applied for longer than designed/required, resulting in temperature dropping below normal range.",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"cooling\",\"failure\":\"excessive_duration\",\"note\":\"Intermediate driven by operator error or hot reservoir leakage.\"}",
+    "tags": "[\"cooling\",\"duration\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "cf27af9b-4501-5e16-ad3e-4bfe4d882871",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "a7aa40ec-304f-5aa9-aae0-495ca2eacd77",
+    "name": "Heater kept off",
+    "kind": "intermediate",
+    "description": "Heater is not enabled when heating is needed (e.g., control decision or operator action), allowing temperature to fall below normal.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"heater\",\"failure\":\"kept_off\",\"note\":\"Intermediate driven by operator error or heater malfunction.\"}",
+    "tags": "[\"heater\",\"off\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "cf18fa47-fcc7-540c-a749-2dcec28a8a75",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "cf27af9b-4501-5e16-ad3e-4bfe4d882871",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Excessive Cooling Duration occurs if operator error happens or if hot reservoir leakage contributes to prolonged/ineffective thermal control.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"excessive_cooling_duration\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "79bb11dc-735e-5e40-a01b-108dc1615c3c",
+        "name": "Leakage in Hot Reservoir",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+    "name": "Operator Error",
+    "kind": "basic",
+    "description": "Incorrect human action (wrong setting, delayed response, or incorrect valve/heater/cooling operation) leading to undesired temperature behavior.",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": 0.06,
+    "metadata": "{\"domain\":\"human_factor\",\"failure\":\"operator_error\",\"detection_hint\":\"Validate procedures, logging, and operator actions vs expected sequence.\",\"note\":\"Shared leaf used in multiple branches.\"}",
+    "tags": "[\"operator\",\"human-factor\",\"basic\",\"shared\"]",
+    "children": []
+  },
+  {
+    "id": "79bb11dc-735e-5e40-a01b-108dc1615c3c",
+    "name": "Leakage in Hot Reservoir",
+    "kind": "basic",
+    "description": "Leak in the hot reservoir reduces heating capacity/available hot fluid, contributing to lower system temperature.",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"hot_reservoir\",\"failure\":\"leakage\",\"detection_hint\":\"Monitor level/visual inspection; correlate with inability to maintain temperature.\"}",
+    "tags": "[\"hot-reservoir\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "cf18fa47-fcc7-540c-a749-2dcec28a8a75",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Heater kept off occurs due to operator error or heater malfunction preventing heating.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"heater_kept_off\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "495ee5e6-af1c-55f3-aa4a-807d4046af16",
+        "name": "Heater Malfunction",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "495ee5e6-af1c-55f3-aa4a-807d4046af16",
+    "name": "Heater Malfunction",
+    "kind": "basic",
+    "description": "Heater fails to operate correctly (no heat output, control fault, relay failure), resulting in insufficient heating and low temperature.",
+    "severity": "high",
+    "detection": "high",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"heater\",\"failure\":\"malfunction\",\"detection_hint\":\"Compare heater command vs measured temperature response; check power/relay state.\"}",
+    "tags": "[\"heater\",\"failure\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "93da3a76-6720-5e34-a7c1-861452ac3edc",
+    "name": "High Flow",
+    "kind": "intermediate",
+    "description": "Flow rate exceeds the defined normal operating range; may indicate pump overspeed/overdrive or abnormal restrictions/routing effects that force high flow in the measured segment.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"flow\",\"threshold\":\"above_normal\",\"note\":\"Intermediate (derived from child events).\"}",
+    "tags": "[\"flow\",\"above-normal\",\"abnormal\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "0f45be38-323e-53b8-abcc-895977818675",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "0f45be38-323e-53b8-abcc-895977818675",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: High Flow occurs if any one of the child causes occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"high_flow\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "2ccf668b-00d2-5d0f-a93b-474f6f1c38c8",
+        "name": "Pump Operating Above Normal Conditions",
+        "kind": "intermediate"
+      },
+      {
+        "id": "100a176a-d233-5f51-ad37-86f55725e31d",
+        "name": "Blockage Before GP",
+        "kind": "intermediate"
+      },
+      {
+        "id": "e69fc678-9768-50e9-ad16-00c0792586cf",
+        "name": "Blockage After GP",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "2ccf668b-00d2-5d0f-a93b-474f6f1c38c8",
+    "name": "Pump Operating Above Normal Conditions",
+    "kind": "intermediate",
+    "description": "Pump operates above its intended setting (speed/command), increasing delivered flow beyond normal.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"over_operation\",\"note\":\"Intermediate driven by operator error or control/system error.\"}",
+    "tags": "[\"pump\",\"overdrive\",\"flow\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "f961fde1-0627-56d0-aee9-9dc656e382d6",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "f961fde1-0627-56d0-aee9-9dc656e382d6",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Pump Operating Above Normal Conditions occurs due to operator error or system/control error.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"pump_operating_above_normal_conditions\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "6fc53298-066b-5afa-a861-14b297b5cefe",
+        "name": "System Error",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "6fc53298-066b-5afa-a861-14b297b5cefe",
+    "name": "System Error",
+    "kind": "basic",
+    "description": "Control/software/hardware fault causes an incorrect pump command (e.g., wrong setpoint, bad feedback loop, or controller bug) leading to over-operation.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"control_system\",\"component\":\"controller\",\"failure\":\"system_error\",\"detection_hint\":\"Compare commanded vs expected pump state; review logs/alerts.\"}",
+    "tags": "[\"control\",\"system-error\",\"pump\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "100a176a-d233-5f51-ad37-86f55725e31d",
+    "name": "Blockage Before GP",
+    "kind": "intermediate",
+    "description": "Restriction/blockage upstream of GP (gauge point) alters flow distribution and can contribute to abnormal measured flow conditions.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"location\":\"before_gp\",\"failure\":\"blockage\",\"note\":\"Intermediate; diagram shows AND junction at this level.\"}",
+    "tags": "[\"blockage\",\"upstream\",\"gp\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "d438553d-e91b-51b9-af56-2fb1e66be23b",
+        "name": "AND Gate",
+        "kind": "gate_and"
+      }
+    ]
+  },
+  {
+    "id": "d438553d-e91b-51b9-af56-2fb1e66be23b",
+    "name": "AND Gate",
+    "kind": "gate_and",
+    "description": "AND logic: Blockage Before GP requires combined conditions per the diagram (both route-related blockage contributors must be present).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"AND\",\"parent\":\"blockage_before_gp\",\"note\":\"Use dome-shaped gate in diagram.\"}",
+    "tags": "[\"gate\",\"and\"]",
+    "children": [
+      {
+        "id": "e6a475d0-378a-518d-ac12-7b134ccb2e96",
+        "name": "Blockage in original route",
+        "kind": "intermediate"
+      },
+      {
+        "id": "13361a04-ebe5-570c-a329-9a6fc5c62c07",
+        "name": "Blockage in Alternative Route",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "e6a475d0-378a-518d-ac12-7b134ccb2e96",
+    "name": "Blockage in original route",
+    "kind": "intermediate",
+    "description": "Restriction in the primary/original flow path (e.g., closed valve or contamination) reduces or redirects flow.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"routing\":\"original_route\",\"failure\":\"blockage\",\"note\":\"Intermediate (driven by valves close and/or contamination).\"}",
+    "tags": "[\"blockage\",\"original-route\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "dbba2f80-53be-5a0b-a4ef-e7a1a42161a5",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "dbba2f80-53be-5a0b-a4ef-e7a1a42161a5",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Blockage in original route occurs if valves are closed or contamination causes restriction.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"blockage_in_original_route\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "409b639e-b40f-59b9-a749-f68154b6ee45",
+        "name": "Valves Close",
+        "kind": "basic"
+      },
+      {
+        "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+        "name": "Contamination",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "13361a04-ebe5-570c-a329-9a6fc5c62c07",
+    "name": "Blockage in Alternative Route",
+    "kind": "intermediate",
+    "description": "Restriction in the alternative route reduces bypass/redirected flow capability; may cause abnormal distribution and contribute to high measured flow elsewhere.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"routing\":\"alternative_route\",\"failure\":\"blockage\",\"note\":\"Intermediate (driven by operator error / valves close / contamination in your diagram).\"}",
+    "tags": "[\"blockage\",\"alternative-route\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "f0e964fe-1021-57de-ab1e-ba86c4068681",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "f0e964fe-1021-57de-ab1e-ba86c4068681",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Blockage in Alternative Route occurs if operator error happens, valves close, or contamination causes restriction.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"blockage_in_alternative_route\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "409b639e-b40f-59b9-a749-f68154b6ee45",
+        "name": "Valves Close",
+        "kind": "basic"
+      },
+      {
+        "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+        "name": "Contamination",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "e69fc678-9768-50e9-ad16-00c0792586cf",
+    "name": "Blockage After GP",
+    "kind": "intermediate",
+    "description": "Restriction downstream of GP changes flow/pressure characteristics and may lead to abnormal flow readings or rerouting effects.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"location\":\"after_gp\",\"failure\":\"blockage\",\"note\":\"Intermediate; includes contamination and a valve-closure AND junction.\"}",
+    "tags": "[\"blockage\",\"downstream\",\"gp\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "9e6cf932-77e3-5784-a33a-4db6fb244f1f",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "9e6cf932-77e3-5784-a33a-4db6fb244f1f",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Blockage After GP occurs due to contamination or due to the combined valve-closure condition (AND gate branch).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"blockage_after_gp\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+        "name": "Contamination",
+        "kind": "basic"
+      },
+      {
+        "id": "9e171c57-8a2e-5faf-ac23-c792e15b8025",
+        "name": "AND Gate",
+        "kind": "gate_and"
+      }
+    ]
+  },
+  {
+    "id": "9e171c57-8a2e-5faf-ac23-c792e15b8025",
+    "name": "AND Gate",
+    "kind": "gate_and",
+    "description": "AND logic: downstream valve-related blockage condition requires all listed valves to be closed (per diagram).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"AND\",\"parent\":\"blockage_after_gp\",\"branch\":\"valves\",\"note\":\"Use dome-shaped gate in diagram.\"}",
+    "tags": "[\"gate\",\"and\",\"valves\"]",
+    "children": [
+      {
+        "id": "6a47130c-0936-5b0f-a3f6-66bf89f5b0a9",
+        "name": "Valve 1 closed",
+        "kind": "basic"
+      },
+      {
+        "id": "30b174b2-c98d-5073-a941-1df9ca04654f",
+        "name": "Valve 2 closed",
+        "kind": "basic"
+      },
+      {
+        "id": "cd7aabd4-ac87-5960-a767-d635ba8078a8",
+        "name": "Valve 3 closed",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "6a47130c-0936-5b0f-a3f6-66bf89f5b0a9",
+    "name": "Valve 1 closed",
+    "kind": "basic",
+    "description": "Valve 1 is closed or significantly restricted, contributing to downstream blockage and altered flow conditions.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"valve\",\"valve\":1,\"failure\":\"closed\",\"detection_hint\":\"Check valve position/indicator; correlate with flow/pressure change.\"}",
+    "tags": "[\"valve\",\"closed\",\"basic\",\"valve-1\"]",
+    "children": []
+  },
+  {
+    "id": "30b174b2-c98d-5073-a941-1df9ca04654f",
+    "name": "Valve 2 closed",
+    "kind": "basic",
+    "description": "Valve 2 is closed or significantly restricted, contributing to downstream blockage and altered flow conditions.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"valve\",\"valve\":2,\"failure\":\"closed\",\"detection_hint\":\"Check valve position/indicator; correlate with flow/pressure change.\"}",
+    "tags": "[\"valve\",\"closed\",\"basic\",\"valve-2\"]",
+    "children": []
+  },
+  {
+    "id": "cd7aabd4-ac87-5960-a767-d635ba8078a8",
+    "name": "Valve 3 closed",
+    "kind": "basic",
+    "description": "Valve 3 is closed or significantly restricted, contributing to downstream blockage and altered flow conditions.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"valve\",\"valve\":3,\"failure\":\"closed\",\"detection_hint\":\"Check valve position/indicator; correlate with flow/pressure change.\"}",
+    "tags": "[\"valve\",\"closed\",\"basic\",\"valve-3\"]",
+    "children": []
+  },
+  {
+    "id": "ac8834b2-f0e7-5f6c-a821-2f631bddaf43",
+    "name": "Leaks",
+    "kind": "intermediate",
+    "description": "Unintended fluid loss from the system due to cracks, loose fittings, or seal failures; can reduce performance and cause instability.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"failure\":\"leakage\",\"note\":\"Intermediate (derived from child leak sources).\"}",
+    "tags": "[\"leak\",\"fluid-loss\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "5a1f4adf-575b-5420-ae65-7f3aada03cbd",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "5a1f4adf-575b-5420-ae65-7f3aada03cbd",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Leaks occur if any one of the listed leak sources occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"leaks\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "098056f3-a067-5afd-a02d-c0e30946591f",
+        "name": "Pipe Crack",
+        "kind": "basic"
+      },
+      {
+        "id": "bb796381-3cf5-5699-a7c1-c23f509f3e4b",
+        "name": "Loose Fittings",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "098056f3-a067-5afd-a02d-c0e30946591f",
+    "name": "Pipe Crack",
+    "kind": "basic",
+    "description": "Crack in a pipe/line causes leakage and possible air ingress, reducing effective flow and system stability.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"pipe\",\"failure\":\"crack\",\"detection_hint\":\"Visual inspection; wet spots; pressure decay; recurring air bubbles.\"}",
+    "tags": "[\"pipe\",\"crack\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "bb796381-3cf5-5699-a7c1-c23f509f3e4b",
+    "name": "Loose Fittings",
+    "kind": "basic",
+    "description": "Loose couplings/fittings allow leakage at joints, especially under pressure or vibration.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"fitting\",\"failure\":\"loose_connection\",\"detection_hint\":\"Visual inspection; tightening check; leak around joints.\"}",
+    "tags": "[\"fittings\",\"loose\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "90cfc3ad-1fb5-5588-ab6a-50b1bdb82271",
+    "name": "Broken pump",
+    "kind": "intermediate",
+    "description": "Pump fails to deliver expected performance due to mechanical, electrical, fluid compatibility, or seal issues.",
+    "severity": "critical",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"pump_failure\",\"note\":\"Intermediate: can be driven by wrong fluid, electrical issues, seal leak, contamination, cavitation, or unknown malfunction.\"}",
+    "tags": "[\"pump\",\"failure\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "4a767c51-1cef-572d-ad4a-1d6f64b86b68",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "4a767c51-1cef-572d-ad4a-1d6f64b86b68",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Broken pump occurs if any one of the listed contributing faults occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"broken_pump\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "52710ae0-5c3f-5eb0-a7c4-87f1d1712c18",
+        "name": "Contamination",
+        "kind": "basic"
+      },
+      {
+        "id": "99891530-3c09-502c-a094-9b96613bcd40",
+        "name": "Wrong fluid",
+        "kind": "basic"
+      },
+      {
+        "id": "585df1fc-01b5-576a-a364-560795b2400d",
+        "name": "Electrical Problems",
+        "kind": "intermediate"
+      },
+      {
+        "id": "d8d96b1f-badb-5e18-adef-b2023d0cb088",
+        "name": "pump seal leak",
+        "kind": "basic"
+      },
+      {
+        "id": "e7d897c3-b791-55bb-a0be-e06d3c7d1c73",
+        "name": "unknown malfunction",
+        "kind": "basic"
+      },
+      {
+        "id": "c58eceba-2be3-54f0-aaab-dd68d80d161c",
+        "name": "Cavatation",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "99891530-3c09-502c-a094-9b96613bcd40",
+    "name": "Wrong fluid",
+    "kind": "basic",
+    "description": "Incorrect fluid type/mixture (viscosity, contamination, or incompatible chemistry) causes poor pump operation or damage.",
+    "severity": "high",
+    "detection": "low",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"wrong_fluid\",\"detection_hint\":\"Hard to detect immediately; validate fluid spec; observe abnormal noise/temperature/flow.\"}",
+    "tags": "[\"fluid\",\"wrong-fluid\",\"pump\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "585df1fc-01b5-576a-a364-560795b2400d",
+    "name": "Electrical Problems",
+    "kind": "intermediate",
+    "description": "Electrical supply/control issues prevent the pump from running reliably or at correct power.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"electrical\",\"subsystem\":\"pump\",\"failure\":\"electrical_issue\",\"note\":\"Intermediate driven by operator error or power outage (per your diagram).\"}",
+    "tags": "[\"electrical\",\"pump\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "8d48e488-44b5-5d53-a6b1-838bbf5f051d",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "8d48e488-44b5-5d53-a6b1-838bbf5f051d",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Electrical Problems occur due to operator error (miswiring/incorrect setup) or power outage.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"electrical_problems\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "1b28c380-6d81-5f82-a36e-1f727b170501",
+        "name": "Power Outage",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "1b28c380-6d81-5f82-a36e-1f727b170501",
+    "name": "Power Outage",
+    "kind": "basic",
+    "description": "Loss of electrical power prevents pump operation and may cause abrupt flow drop or unstable behavior on restart.",
+    "severity": "high",
+    "detection": "high",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"electrical\",\"component\":\"power_supply\",\"failure\":\"outage\",\"detection_hint\":\"Power indicator off; controller reset; logs show loss-of-power event.\"}",
+    "tags": "[\"power\",\"outage\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "d8d96b1f-badb-5e18-adef-b2023d0cb088",
+    "name": "pump seal leak",
+    "kind": "basic",
+    "description": "Seal failure at the pump shaft/connection causes leakage and may allow air ingress, reducing pump efficiency or causing damage.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"fluid_loop\",\"component\":\"pump_seal\",\"failure\":\"seal_leak\",\"detection_hint\":\"Leak near pump; wet housing; reduced performance; possible cavitation-like symptoms.\"}",
+    "tags": "[\"pump\",\"seal\",\"leak\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "e7d897c3-b791-55bb-a0be-e06d3c7d1c73",
+    "name": "unknown malfunction",
+    "kind": "basic",
+    "description": "Unidentified fault causing abnormal pump behavior when no specific failure mode is confirmed.",
+    "severity": "medium",
+    "detection": "low",
+    "probability": 0.01,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"unknown\",\"detection_hint\":\"Use as placeholder until root-cause is confirmed; log symptoms and diagnostics.\"}",
+    "tags": "[\"unknown\",\"malfunction\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "c58eceba-2be3-54f0-aaab-dd68d80d161c",
+    "name": "Cavatation",
+    "kind": "intermediate",
+    "description": "Cavitation occurs when local pressure drops below vapor pressure, causing vapor bubbles and potential pump damage, noise, and reduced flow.",
+    "severity": "critical",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"cavitation\",\"note\":\"Intermediate driven by operator error, blockage before pump, bucket leaks, or alternate-route circulation above designed time.\"}",
+    "tags": "[\"cavitation\",\"pump\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "71cf645c-63f6-56ac-a0c4-029e16a2b353",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "71cf645c-63f6-56ac-a0c4-029e16a2b353",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Cavitation occurs if any one of the listed contributing conditions occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"cavitation\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "7872ff4e-05ff-522c-ae96-e9702142d0d9",
+        "name": "Operator Error",
+        "kind": "basic"
+      },
+      {
+        "id": "c5bc3277-36e8-592f-ac7e-bba291b0abe8",
+        "name": "Blockage Before pump",
+        "kind": "intermediate"
+      },
+      {
+        "id": "7fe92d7c-2e55-5324-a50f-11142385a90f",
+        "name": "Bucket leaks",
+        "kind": "intermediate"
+      },
+      {
+        "id": "05ddd8e0-87b4-5c23-a2fd-c638561ac154",
+        "name": "Alternative Route Circulation Above Designed Time",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "c5bc3277-36e8-592f-ac7e-bba291b0abe8",
+    "name": "Blockage Before pump",
+    "kind": "intermediate",
+    "description": "Restriction on the suction side of the pump reduces inlet pressure, increasing the likelihood of cavitation.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"location\":\"before_pump\",\"failure\":\"blockage\",\"note\":\"Intermediate suction-side restriction condition.\"}",
+    "tags": "[\"blockage\",\"suction\",\"pump\",\"intermediate\"]",
+    "children": []
+  },
+  {
+    "id": "7fe92d7c-2e55-5324-a50f-11142385a90f",
+    "name": "Bucket leaks",
+    "kind": "intermediate",
+    "description": "Leakage from one or both buckets reduces available volume and can introduce air, contributing to cavitation and unstable pump inlet conditions.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"buckets\",\"failure\":\"leakage\",\"note\":\"Intermediate bucket leakage condition (children are Bucket 1 leak + Bucket 2 leak elsewhere).\"}",
+    "tags": "[\"bucket\",\"leak\",\"intermediate\"]",
+    "children": []
+  },
+  {
+    "id": "05ddd8e0-87b4-5c23-a2fd-c638561ac154",
+    "name": "Alternative Route Circulation Above Designed Time",
+    "kind": "intermediate",
+    "description": "Fluid circulates through an alternate route for longer than designed, potentially reducing inlet pressure and contributing to cavitation.",
+    "severity": "high",
+    "detection": "low",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"routing\",\"failure\":\"alt_route_over_duration\",\"note\":\"Intermediate driven by a required combination (AND) of bucket leak conditions (per diagram).\"}",
+    "tags": "[\"routing\",\"alternate-route\",\"duration\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "376d8701-0943-5caa-a180-b444a616da31",
+        "name": "AND Gate",
+        "kind": "gate_and"
+      }
+    ]
+  },
+  {
+    "id": "376d8701-0943-5caa-a180-b444a616da31",
+    "name": "AND Gate",
+    "kind": "gate_and",
+    "description": "AND logic: Alternative Route Circulation Above Designed Time occurs only when all required input conditions occur together (per diagram).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"AND\",\"parent\":\"alt_route_circulation_above_designed_time\",\"note\":\"Use dome-shaped gate in diagram.\"}",
+    "tags": "[\"gate\",\"and\"]",
+    "children": [
+      {
+        "id": "40be22a9-caab-58bf-a1de-2fff69ebcadd",
+        "name": "Bucket 1 leak",
+        "kind": "basic"
+      },
+      {
+        "id": "8c2ae2e4-1592-5433-a747-171ec63c7ba9",
+        "name": "Bucket 2 leak",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "b5537682-8465-5d90-aa99-4ba43f7f1298",
+    "name": "Pump under-performing",
+    "kind": "intermediate",
+    "description": "Pump delivers lower-than-expected flow/pressure compared to its normal operating range; can be caused by mechanical wear, cavitation, incorrect settings, or electrical/supply issues.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"subsystem\":\"pump\",\"failure\":\"under_performance\",\"note\":\"Intermediate node (root cause depends on linked children in the tree).\"}",
+    "tags": "[\"pump\",\"underperforming\",\"flow\",\"intermediate\"]",
+    "children": []
+  },
+  {
+    "id": "fb1c5d8f-bd9f-5bd4-a032-5b2d361e3c47",
+    "name": "Sensor Malfunction",
+    "kind": "intermediate",
+    "description": "Sensor provides unreliable or incorrect readings (drift, spikes, dropouts, or stuck values) due to electrical, environmental, or controller issues.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"instrumentation\",\"subsystem\":\"sensors\",\"failure\":\"malfunction\",\"note\":\"Intermediate: may involve Arduino/controller, water contact, wiring, or overload.\"}",
+    "tags": "[\"sensor\",\"instrumentation\",\"fault\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "2d7e39b2-851d-564b-ad9b-1b8ed5dfea91",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "2d7e39b2-851d-564b-ad9b-1b8ed5dfea91",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Sensor Malfunction occurs if any one of the listed sensor/controller issues occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"sensor_malfunction\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "38f5fa27-da7b-5bc6-a93b-53bfa5c041a3",
+        "name": "Arduino",
+        "kind": "intermediate"
+      },
+      {
+        "id": "e97526e6-9865-5448-a8cf-bc93e031755a",
+        "name": "Water Contact",
+        "kind": "basic"
+      },
+      {
+        "id": "4cc6aafd-34f2-56d8-a3b4-5c11d4b2db28",
+        "name": "Wire Misplacement",
+        "kind": "basic"
+      },
+      {
+        "id": "ecde4d19-4875-573c-a1cf-8c55c2df006e",
+        "name": "Sensor Overload",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "38f5fa27-da7b-5bc6-a93b-53bfa5c041a3",
+    "name": "Arduino",
+    "kind": "intermediate",
+    "description": "Controller/Arduino subsystem issues affect sensor reading acquisition, processing, or transmission (software, power, or hardware constraints).",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"control_system\",\"component\":\"arduino\",\"failure\":\"controller_issue\",\"note\":\"Intermediate: driven by code issues, storage limits, power issues, or unknown malfunction.\"}",
+    "tags": "[\"arduino\",\"controller\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "2e64e01e-27d4-5a7c-ad32-91c76df89d73",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "e97526e6-9865-5448-a8cf-bc93e031755a",
+    "name": "Water Contact",
+    "kind": "basic",
+    "description": "Water/moisture contacts sensor wires or electronics, causing short circuits, corrosion, or unstable readings.",
+    "severity": "high",
+    "detection": "low",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"instrumentation\",\"failure\":\"water_contact\",\"detection_hint\":\"Visual inspection for moisture; sudden noisy readings; intermittent shorts.\"}",
+    "tags": "[\"water\",\"short\",\"sensor\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "4cc6aafd-34f2-56d8-a3b4-5c11d4b2db28",
+    "name": "Wire Misplacement",
+    "kind": "basic",
+    "description": "Incorrect wiring (wrong pin, swapped polarity, loose connection) results in incorrect or missing sensor readings.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": 0.04,
+    "metadata": "{\"domain\":\"instrumentation\",\"failure\":\"wiring_error\",\"detection_hint\":\"Continuity check; verify pin mapping; compare expected vs observed readings.\"}",
+    "tags": "[\"wiring\",\"misplacement\",\"sensor\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "ecde4d19-4875-573c-a1cf-8c55c2df006e",
+    "name": "Sensor Overload",
+    "kind": "basic",
+    "description": "Sensor operates beyond its rated range (e.g., too high temperature/pressure/flow), causing saturation, clipping, or damage leading to inaccurate readings.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"instrumentation\",\"failure\":\"overload\",\"detection_hint\":\"Readings stuck at max/min; sudden step changes; compare with secondary measurement if available.\"}",
+    "tags": "[\"sensor\",\"overload\",\"saturation\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "2e64e01e-27d4-5a7c-ad32-91c76df89d73",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Arduino issues occur if any one of the listed controller-related problems occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"arduino\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "95f18346-74b8-51e5-a407-ae0671ecb172",
+        "name": "Code issues",
+        "kind": "intermediate"
+      },
+      {
+        "id": "bbc8e6cf-6326-52a9-a02e-f49f224e213f",
+        "name": "Full storage",
+        "kind": "basic"
+      },
+      {
+        "id": "c937e885-ac7a-5726-a9ac-381780b064b1",
+        "name": "No Power",
+        "kind": "intermediate"
+      },
+      {
+        "id": "e7d897c3-b791-55bb-a0be-e06d3c7d1c73",
+        "name": "unknown malfunction",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "95f18346-74b8-51e5-a407-ae0671ecb172",
+    "name": "Code issues",
+    "kind": "intermediate",
+    "description": "Software/firmware problems in the Arduino program cause incorrect sensor handling, parsing, scaling, or reporting.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": null,
+    "metadata": "{\"domain\":\"software\",\"component\":\"arduino_firmware\",\"failure\":\"code_issue\",\"note\":\"Intermediate: driven by error in code or wrong program uploaded.\"}",
+    "tags": "[\"code\",\"firmware\",\"arduino\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "5d94c25e-6dec-50cb-a054-d859ceb7766b",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "bbc8e6cf-6326-52a9-a02e-f49f224e213f",
+    "name": "Full storage",
+    "kind": "basic",
+    "description": "Arduino storage/memory/logging space is full, causing logging failures, buffer overflow, or dropped sensor updates.",
+    "severity": "medium",
+    "detection": "medium",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"embedded\",\"component\":\"storage\",\"failure\":\"storage_full\",\"detection_hint\":\"Logs stop updating; write errors; device resets or freezes.\"}",
+    "tags": "[\"storage\",\"memory\",\"arduino\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "c937e885-ac7a-5726-a9ac-381780b064b1",
+    "name": "No Power",
+    "kind": "intermediate",
+    "description": "Arduino/sensor subsystem has no power supply, preventing sensor readings from being produced.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"electrical\",\"component\":\"power\",\"failure\":\"no_power\",\"note\":\"Intermediate: driven by battery dies or battery not connected.\"}",
+    "tags": "[\"power\",\"battery\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "7fa2a735-4b52-52a8-a36b-c14df8e7e255",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "5d94c25e-6dec-50cb-a054-d859ceb7766b",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Code issues occur if there is an error in the code or the wrong program was uploaded.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"code_issues\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "0c0a9ff5-06a6-5ec9-aad6-1ed1c9226cc9",
+        "name": "Error in the Code",
+        "kind": "basic"
+      },
+      {
+        "id": "08cc366f-bc93-5573-af6a-7116328edb2c",
+        "name": "Wrong program",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "0c0a9ff5-06a6-5ec9-aad6-1ed1c9226cc9",
+    "name": "Error in the Code",
+    "kind": "basic",
+    "description": "Bug or logic mistake in the Arduino code (wrong calibration, wrong units, timing bug, overflow) produces incorrect readings.",
+    "severity": "high",
+    "detection": "medium",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"software\",\"component\":\"arduino_firmware\",\"failure\":\"bug\",\"detection_hint\":\"Unit tests/sanity checks; compare with known reference; review recent code changes.\"}",
+    "tags": "[\"code\",\"bug\",\"arduino\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "08cc366f-bc93-5573-af6a-7116328edb2c",
+    "name": "Wrong program",
+    "kind": "basic",
+    "description": "Incorrect firmware/program is uploaded or running (wrong sketch/config), causing sensor logic to be incompatible with the setup.",
+    "severity": "high",
+    "detection": "high",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"software\",\"component\":\"arduino_firmware\",\"failure\":\"wrong_firmware\",\"detection_hint\":\"Verify build/version; confirm configuration and pin mapping; reflashing resolves issue.\"}",
+    "tags": "[\"firmware\",\"wrong-program\",\"arduino\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "7fa2a735-4b52-52a8-a36b-c14df8e7e255",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: No Power occurs if the battery dies or if the battery is not connected.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"no_power\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "acfd07b7-936d-5135-acd0-6ee6b3f6b9ff",
+        "name": "Battery dies",
+        "kind": "basic"
+      },
+      {
+        "id": "486849e5-517c-5b54-a8e6-288f943b1df7",
+        "name": "Battery not connected",
+        "kind": "basic"
+      }
+    ]
+  },
+  {
+    "id": "acfd07b7-936d-5135-acd0-6ee6b3f6b9ff",
+    "name": "Battery dies",
+    "kind": "basic",
+    "description": "Battery is depleted and can no longer provide sufficient voltage/current to power the Arduino/sensors.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": 0.03,
+    "metadata": "{\"domain\":\"electrical\",\"component\":\"battery\",\"failure\":\"depleted\",\"detection_hint\":\"Low voltage reading; power LED off; device resets/browns out.\"}",
+    "tags": "[\"battery\",\"depleted\",\"power\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "486849e5-517c-5b54-a8e6-288f943b1df7",
+    "name": "Battery not connected",
+    "kind": "basic",
+    "description": "Battery is disconnected (loose connector, wrong wiring, unplugged), resulting in no power delivered to the Arduino/sensors.",
+    "severity": "medium",
+    "detection": "high",
+    "probability": 0.02,
+    "metadata": "{\"domain\":\"electrical\",\"component\":\"battery\",\"failure\":\"disconnected\",\"detection_hint\":\"Immediate no-power state; verify connector seating and wiring.\"}",
+    "tags": "[\"battery\",\"disconnected\",\"power\",\"basic\"]",
+    "children": []
+  },
+  {
+    "id": "690bd520-c848-5d51-a70a-82b130cd4380",
+    "name": "Ultimate Fail",
+    "kind": "top",
+    "description": "Top event: the system reaches an unacceptable operating state due to temperature or flow being outside normal conditions.",
+    "severity": "critical",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"type\":\"top_event\",\"note\":\"Root of the failure tree (FTA top event).\"}",
+    "tags": "[\"top\",\"ultimate\",\"failure\",\"fluid-loop\"]",
+    "children": [
+      {
+        "id": "27e5911d-d114-55ef-ae4f-1e35eff1ce26",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "27e5911d-d114-55ef-ae4f-1e35eff1ce26",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Ultimate Fail occurs if either Temperature Out of Normal Conditions or Flow out of normal conditions occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"ultimate_fail\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "fa309b85-55bf-5e34-aa53-ea4e9d6529eb",
+        "name": "Temperature Out of Normal Conditions",
+        "kind": "intermediate"
+      },
+      {
+        "id": "33ac6ac0-6c7c-5a0c-a7b8-603e37cb20ce",
+        "name": "Flow out of normal conditions",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "fa309b85-55bf-5e34-aa53-ea4e9d6529eb",
+    "name": "Temperature Out of Normal Conditions",
+    "kind": "intermediate",
+    "description": "Temperature deviates from the normal operating range (too high or too low), indicating abnormal thermal control or cooling/heating issues.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"temperature\",\"threshold\":\"outside_normal\",\"note\":\"Intermediate: expands into above-normal and under-normal branches.\"}",
+    "tags": "[\"temperature\",\"abnormal\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "aee48664-231c-5395-a18d-e303a1fde696",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "aee48664-231c-5395-a18d-e303a1fde696",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Temperature Out of Normal Conditions occurs if Temperature Above Normal Conditions or Temperature Under Normal Conditions occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"temp_out_of_normal_conditions\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "ecf4386a-76cc-54dd-ac72-a0c0c77de873",
+        "name": "Temperature Above Normal Conditions",
+        "kind": "intermediate"
+      },
+      {
+        "id": "ddda88c6-1587-5891-af7d-a798ed2ab241",
+        "name": "Temperature Under Normal Conditions",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "33ac6ac0-6c7c-5a0c-a7b8-603e37cb20ce",
+    "name": "Flow out of normal conditions",
+    "kind": "intermediate",
+    "description": "Measured flow deviates from the normal operating range (too high or too low), indicating abnormal pump operation, restriction, leakage, or sensor issues.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"flow\",\"threshold\":\"outside_normal\",\"note\":\"Intermediate: expands into high-flow and low-flow branches.\"}",
+    "tags": "[\"flow\",\"abnormal\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "881de62d-77a8-513c-a363-fccabd67dca7",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "881de62d-77a8-513c-a363-fccabd67dca7",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Flow out of normal conditions occurs if High Flow or Low Flow occurs.",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"flow_out_of_normal_conditions\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "93da3a76-6720-5e34-a7c1-861452ac3edc",
+        "name": "High Flow",
+        "kind": "intermediate"
+      },
+      {
+        "id": "21a1a757-6f53-534b-a4ca-adcb4cbab821",
+        "name": "Low Flow",
+        "kind": "intermediate"
+      }
+    ]
+  },
+  {
+    "id": "21a1a757-6f53-534b-a4ca-adcb4cbab821",
+    "name": "Low Flow",
+    "kind": "intermediate",
+    "description": "Flow rate drops below the defined normal operating range; commonly caused by blockages, leaks, pump issues, or sensor malfunction.",
+    "severity": "high",
+    "detection": "high",
+    "probability": null,
+    "metadata": "{\"domain\":\"fluid_loop\",\"signal\":\"flow\",\"threshold\":\"below_normal\",\"note\":\"Intermediate: expands into blockage/leak/pump/sensor branches.\"}",
+    "tags": "[\"flow\",\"below-normal\",\"abnormal\",\"intermediate\"]",
+    "children": [
+      {
+        "id": "b680d575-0360-5bb1-a033-2f13235aa247",
+        "name": "OR Gate",
+        "kind": "gate_or"
+      }
+    ]
+  },
+  {
+    "id": "b680d575-0360-5bb1-a033-2f13235aa247",
+    "name": "OR Gate",
+    "kind": "gate_or",
+    "description": "OR logic: Low Flow occurs if any one of its child causes occurs (blockages, leaks, pump issues, or sensor malfunction).",
+    "severity": null,
+    "detection": null,
+    "probability": null,
+    "metadata": "{\"gate\":\"OR\",\"parent\":\"low_flow\"}",
+    "tags": "[\"gate\",\"or\"]",
+    "children": [
+      {
+        "id": "100a176a-d233-5f51-ad37-86f55725e31d",
+        "name": "Blockage Before GP",
+        "kind": "intermediate"
+      },
+      {
+        "id": "e69fc678-9768-50e9-ad16-00c0792586cf",
+        "name": "Blockage After GP",
+        "kind": "intermediate"
+      },
+      {
+        "id": "ac8834b2-f0e7-5f6c-a821-2f631bddaf43",
+        "name": "Leaks",
+        "kind": "intermediate"
+      },
+      {
+        "id": "90cfc3ad-1fb5-5588-ab6a-50b1bdb82271",
+        "name": "Broken pump",
+        "kind": "intermediate"
+      },
+      {
+        "id": "b5537682-8465-5d90-aa99-4ba43f7f1298",
+        "name": "Pump under-performing",
+        "kind": "intermediate"
+      },
+      {
+        "id": "fb1c5d8f-bd9f-5bd4-a032-5b2d361e3c47",
+        "name": "Sensor Malfunction",
+        "kind": "intermediate"
+      }
+    ]
+  }
+]

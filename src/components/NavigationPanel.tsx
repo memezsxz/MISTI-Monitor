@@ -1,5 +1,7 @@
 'use client'
 
+import {JSX, useEffect, useState} from "react";
+import {useNotifications} from "@/context/NotificationsContext";
 import {
     faBell as faBellRegular,
     faComment as faCommentRegular,
@@ -13,11 +15,11 @@ import {
     faInfo
 } from "@fortawesome/free-solid-svg-icons";
 import {NavIcon, NavIconProps} from "@/components/NavIcon";
-import {useState} from "react";
 import clsx from "clsx";
 import {NotificationsPanel} from "@/panels/NotificationsPanel";
 import {AIPanel} from "@/panels/AIPanel";
 import {TurnoverPanel} from "@/panels/TurnoverPanel";
+import {InfoPanel} from "@/panels/InfoPanel";
 
 export type NavOptions = '' | 'notifications' | 'comments' | 'notes' | 'info';
 
@@ -48,57 +50,79 @@ const NavItems: NavIconProps[] = [
     },
 ]
 
-export const NavigationPanel = () => {
-    const [currentNavSelectedNavOptions, setCurrentNavSelectedNav] = useState('' as NavOptions);
+export const NavigationPanel = ({
+  currentNav,
+  onNavChange,
+  selectedPartId,
+}: {
+  currentNav?: NavOptions;
+  onNavChange?: (nav: NavOptions) => void;
+  selectedPartId?: string | null;
+}) => {
+  const [internalNav, setInternalNav] = useState<NavOptions>("");
+  const currentNavSelectedNavOptions = currentNav ?? internalNav;
+  const {autoOpenRequested, clearAutoOpen} = useNotifications();
 
-    const handleNavClick = (newState: NavOptions) => {
-        setCurrentNavSelectedNav(currentNavSelectedNavOptions !== newState ? newState : '')
-        console.log(newState)
+  const handleNavClick = (newState: NavOptions) => {
+    const next = currentNavSelectedNavOptions !== newState ? newState : "";
+    if (onNavChange) {
+      onNavChange(next);
+    } else {
+      setInternalNav(next);
     }
+  };
 
-    const panel = () => {
-        switch (currentNavSelectedNavOptions) {
-            case 'notifications':
-                return (<NotificationsPanel/>)
-            case 'comments':
-                return (<AIPanel/>)
-            case 'info':
-                return (<p>Info</p>)
-            case 'notes':
-                return (<TurnoverPanel/>)
-            default:
-                return (<p>Nothing</p>)
-        }
-    }
+  const panels: Record<NavOptions, JSX.Element> = {
+      "": <p> </p>,
+    notifications: <NotificationsPanel />,
+    comments: <AIPanel />,
+    notes: <TurnoverPanel />,
+    info: <InfoPanel selectedPartId={selectedPartId ?? null} />,
+  };
 
-    const isOpen = currentNavSelectedNavOptions !== "";
+  const isOpen = currentNavSelectedNavOptions !== "";
 
-    return (
-        <div className="fixed z-10 bottom-0 left-0 right-0">
-            <div className={clsx("bg-zinc-800 h-15 flex justify-center items-center py-4 gap-3",
-                isOpen ? "border-b-1 border-black" : "")}>
-                {
-                    NavItems.map(
-                        (item, index) => {
-                            item.isActive = currentNavSelectedNavOptions === item.navName
-                            item.handleClick = handleNavClick
-                            return <NavIcon key={'nav' + item.navName} {...item} />
-                        }
-                    )
-                }
-            </div>
+  useEffect(() => {
+      if (!autoOpenRequested) return;
+      if (onNavChange) {
+        onNavChange('notifications');
+      } else {
+        setInternalNav('notifications');
+      }
+      clearAutoOpen();
+  }, [autoOpenRequested, clearAutoOpen, onNavChange]);
 
-            <div className={
-                clsx(
-                    "bg-zinc-800",
-                    "grid overflow-hidden transition-[grid-template-rows,opacity,transform] duration-300 ease-out",
-                    isOpen ? "grid-rows-[1fr] opacity-100 translate-y-0" : "grid-rows-[0fr] opacity-0 translate-y-2"
-                )
-            }>
-                <div className="min-h-0 overflow-y-auto">
-                    <div className="h-80 p-7">{panel()}</div>
-                </div>
-            </div>
+
+  return (
+    <div className="sticky top-0 h-screen flex self-stretch">
+      {/* Sidebar with icons */}
+
+      <div
+        className={clsx(
+          "bg-zinc-800 w-16 h-full flex flex-col items-center justify-center gap-6",
+          isOpen && "border-r border-black"
+        )}
+      >
+        {NavItems.map((item) => ( 
+            <NavIcon key={"nav" + item.navName} 
+            {...item} 
+            isActive={currentNavSelectedNavOptions === item.navName} 
+            handleClick={handleNavClick} 
+            /> 
+        ))} 
+    </div>
+
+      {/* Panel content */}
+      <div
+        className={clsx(
+          "bg-zinc-800 transition-all duration-300 ease-out overflow-hidden",
+          isOpen ? "w-96 opacity-100 translate-x-0" : "w-0 opacity-0 translate-x-2"
+        )}
+      >
+        <div className="h-full overflow-y-auto">
+          <div className="p-3">{panels[currentNavSelectedNavOptions]}</div>
         </div>
-    )
-}
+      </div>
+    </div>
+  );
+};

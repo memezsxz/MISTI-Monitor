@@ -9,7 +9,9 @@
     "lint": "eslint",
     "db:gen": "npx drizzle-kit generate",
     "db:migrate": "npx drizzle-kit migrate",
-    "db:seed": "tsx src/db/seed.ts"
+    "db:seed": "tsx src/db/seed.ts",
+    "gen:parts_info": "npx tsx src/scripts/generate-pump-plan-store.ts",
+    "gen:failure_tree_info": "npx tsx src/scripts/generate-failure-tree-store.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
@@ -17,12 +19,17 @@
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@libsql/client": "^0.17.0",
+    "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "next": "16.1.4",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "react-textarea-autosize": "^8.5.9",
+    "tailwind-scrollbar": "^4.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

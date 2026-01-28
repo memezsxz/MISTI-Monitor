@@ -1,24 +1,102 @@
-import {Container} from "@/components/Container";
+"use client";
+
 import {NavigationPanel} from "@/components/NavigationPanel";
-import {PumpPlanView} from "@/components/PumpPlan";
+import {FailureTreePanel} from "@/panels/FailureTreePanel";
+import {PumpPlanPanel} from "@/panels/PumpPlanPanel";
+import {useCallback, useEffect, useState} from "react";
+import clsx from "clsx";
+import {Container} from "@/components/Container";
 
 export default function Home() {
+    const [currentNav, setCurrentNav] = useState<"" | "notifications" | "comments" | "notes" | "info">("");
+    const [selectedPartId, setSelectedPartId] = useState<string | null>(null);
+    const [panelMode, setPanelMode] = useState<"plan" | "failure">("plan");
+    const [failureTreeFocusTitle, setFailureTreeFocusTitle] = useState<string | null>(null);
+    const [failureTreeViewState, setFailureTreeViewState] = useState<{
+        zoom: number;
+        collapsed: string[];
+        scrollLeft: number;
+        scrollTop: number;
+    } | null>(null);
+    const [failureTreeStateTouched, setFailureTreeStateTouched] = useState(false);
+    const handleFailureTreeViewState = useCallback((next: {
+        zoom: number;
+        collapsed: string[];
+        scrollLeft: number;
+        scrollTop: number;
+    }) => {
+        setFailureTreeStateTouched(true);
+        setFailureTreeViewState(next);
+    }, []);
+
+    useEffect(() => {
+        const handler = (event: Event) => {
+            const detail = (event as CustomEvent).detail as { title?: string } | undefined;
+            setFailureTreeFocusTitle(detail?.title ?? null);
+            setPanelMode("failure");
+        };
+        window.addEventListener("show-failure-tree", handler);
+        return () => {
+            window.removeEventListener("show-failure-tree", handler);
+        };
+    }, []);
+
+    const style = (type: string) => {
+        return `rounded-md px-3 py-1.5 font-semibold ${panelMode === type ? "bg-white/10" : "text-white/70 hover:text-white/90"}`
+    }
     return (
         <>
-            <div>
-                <div className="flex min-h-full h-300  items-center justify-center  font-sans bg-zinc-900">
-                    <main
-                        className="flex  w-full max-w-3xl flex-col items-center justify-between py-32 px-16  sm:items-start">
-                        <Container>
-                            <PumpPlanView/>
-                            {/*<Image src="/pump_plan.svg" alt="pump plan" width={800} height={1200} priority />*/}
-                            {/*<img src="@/public/pump_plan.svg" alt="pump plan"/>*/}
-                            {/*<p>sadasda</p>*/}
-                        </Container>
+                <div className="flex min-h-screen min-w-screen items-stretch font-sans bg-zinc-900">
+                    <NavigationPanel
+                        currentNav={currentNav}
+                        onNavChange={setCurrentNav}
+                        selectedPartId={selectedPartId}
+                    />
+                    <main className="flex-1 min-w-0 flex py-10 pt-15 px-4 sm:px-6 lg:px-10 items-center justify-center transition-all duration-300 ease-out">
+                        <div className={clsx(
+                            "w-full grid gap-3 mx-auto",
+                            currentNav === "" ? "max-w-full lg:max-w-[70%]" : "max-w-full lg:max-w-[80%]"
+                        )}>
+                            <div className="flex justify-center pb-10">
+                                <div className="inline-flex w-fit rounded-lg border border-white/10 bg-white/5 p-1 text-xs text-white/80">
+                                <button
+                                    type="button"
+                                    onClick={() => setPanelMode("plan")}
+                                    className={style("plan")}
+                                >
+                                    Plan
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPanelMode("failure")}
+                                    className={style("failure")}
+                                >
+                                    Failure Tree
+                                </button>
+                                </div>
+                            </div>
+                            {panelMode === "plan" ? (
+                                <PumpPlanPanel
+                                    onSelectPart={(id) => {
+                                        setCurrentNav("info");
+                                        setSelectedPartId(id);
+                                    }}
+                                />
+                            ) : (
+                                <Container>
+                                    <div className="min-w-0 max-w-full">
+                                        <FailureTreePanel
+                                            focusTitle={failureTreeFocusTitle}
+                                            viewState={failureTreeStateTouched ? failureTreeViewState : null}
+                                            onViewStateChange={handleFailureTreeViewState}
+                                            onFocusHandled={() => setFailureTreeFocusTitle(null)}
+                                        />
+                                    </div>
+                                </Container>
+                            )}
+                        </div>
                     </main>
                 </div>
-                <NavigationPanel/>
-            </div>
         </>
     );
 }

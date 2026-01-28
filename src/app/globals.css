@@ -24,3 +24,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 6px;   /* make scrollbar thinner */
+  height: 6px;  /* for horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: #18181b; /* zinc-900 background */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #3f3f46; /* zinc-700 thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #52525b; /* zinc-600 on hover */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;                /* makes scrollbar thinner */
+  scrollbar-color: #3f3f46 #18181b;     /* thumb color + track color */
+}
+

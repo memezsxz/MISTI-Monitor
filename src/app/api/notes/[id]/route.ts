@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/db/db";
 import { turnoverNotes } from "@/db/schema/turnover_notes";
+import { formatLocalDateTime } from "@/lib/localDate";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -29,7 +30,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
 
         const updated = await db
             .update(turnoverNotes)
-            .set({ text, updatedAt: new Date().toISOString() })
+            .set({ text, updatedAt: formatLocalDateTime() })
             .where(eq(turnoverNotes.id, id))
             .returning();
 

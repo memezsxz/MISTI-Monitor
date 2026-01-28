@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { Shift } from "@/db/schema/shifts";
 import type { TurnoverNote } from "@/db/schema/turnover_notes";
+import TextareaAutosize from 'react-textarea-autosize';
+
 
 async function apiJson<T>(url: string, init?: RequestInit): Promise<T> {
     const r = await fetch(url, {
@@ -19,6 +21,13 @@ async function apiJson<T>(url: string, init?: RequestInit): Promise<T> {
     }
 
     return (await r.json()) as T;
+}
+
+function formatDateTime(iso: string) {
+    const date = new Date(iso);
+    const datePart = date.toLocaleDateString([], { month: "short", day: "numeric" });
+    const timePart = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return `${datePart} ${timePart}`;
 }
 
 function formatTime(iso: string) {
@@ -74,7 +83,7 @@ export const TurnoverPanel = () => {
 
     // ---- fetch helpers ----
     async function fetchNotesList(shiftId: number) {
-        const payload = await apiJson<unknown>(`/api/notes?shiftId=${shiftId}&limit=200`);
+        const payload = await apiJson<unknown>(`/api/notes?shiftId=${shiftId}&pageSize=200`);
         return asListResponse<TurnoverNote>(payload);
     }
 
@@ -126,7 +135,7 @@ export const TurnoverPanel = () => {
         if (!open || !justOpenedCurrent) return;
 
         requestAnimationFrame(() => {
-            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+            bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
         });
     }, [open, expandedShiftId, currentShiftId]);
 
@@ -158,9 +167,9 @@ export const TurnoverPanel = () => {
             const next = list.map((n) => (n.id === noteId ? { ...n, text } : n));
             return { ...prev, [key]: next };
         });
-    }
+}
 
-    async function persistNote(shiftId: number, noteId: number) {
+async function persistNote(shiftId: number, noteId: number) {
         const key = String(shiftId);
         const list = notesByShift[key] ?? [];
         const note = list.find((n) => n.id === noteId);
@@ -172,7 +181,7 @@ export const TurnoverPanel = () => {
             await apiJson(`/api/notes/${noteId}`, { method: "DELETE" });
             await loadNotes(shiftId);
             return;
-        }
+}
 
         await apiJson(`/api/notes/${noteId}`, {
             method: "PATCH",
@@ -180,7 +189,7 @@ export const TurnoverPanel = () => {
         });
 
         await loadNotes(shiftId);
-    }
+}
 
     async function createNote(shiftId: number) {
         const key = String(shiftId);
@@ -217,7 +226,7 @@ export const TurnoverPanel = () => {
     }
 
     return (
-        <div className="grid gap-3 max-h-[70vh] overflow-y-auto">
+        <div className="grid gap-3 w-full h-full">
             {shiftsAsc.map((shift) => {
                 const expanded = expandedShiftId === shift.id;
                 const isCurrent = currentShiftId === shift.id;
@@ -234,7 +243,7 @@ export const TurnoverPanel = () => {
                             onClick={() => toggleShift(shift.id)}
                             className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-white/5 transition text-left"
                         >
-                            <div className="min-w-0">
+                            <div className="min-w-0 ">
                                 <div className="flex items-center gap-2">
                                     <span className="font-semibold truncate">{shift.userName?.trim() || `User #${shift.userId}`}</span>
 
@@ -245,9 +254,9 @@ export const TurnoverPanel = () => {
                                     )}
                                 </div>
 
-                                <div className="text-xs text-white/60 mt-1">
-                                    Start: {formatTime(shift.startedAt)}
-                                    {shift.endedAt ? ` • End: ${formatTime(shift.endedAt)}` : " • End: —"}
+                                <div className="text-xs text-white/60 mt-1 ">
+                                    Start: {formatDateTime(shift.startedAt)}
+                                    {shift.endedAt ? ` • End: ${formatDateTime(shift.endedAt)}` : " • End: —"}
                                 </div>
                             </div>
 
@@ -255,79 +264,78 @@ export const TurnoverPanel = () => {
                         </button>
 
                         {expanded && (
-                            <div className="px-4 pb-4">
-                                <div className="relative pl-6 grid gap-3">
-                                    <div className="absolute left-2 top-1 bottom-1 w-px bg-white/10" />
-
+                            <div className="px-4 pb-4 ">
+                                <div className="grid gap-3">
                                     {notes.map((n) => (
-                                        <div key={n.id} className="relative">
-                                            <div className="absolute -left-[2px] top-2 h-3 w-3 rounded-full bg-zinc-950 border border-white/15" />
-
-                                            <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                                                <div className="flex items-center justify-between gap-3 mb-2">
-                                                    <div className="text-xs text-white/60">{formatTime(n.createdAt)}</div>
-                                                </div>
-
-                                                {editable ? (
-                                                    <textarea
-                                                        value={n.text}
-                                                        onChange={(e) => setLocalNoteText(shift.id, n.id, e.target.value)}
-                                                        onBlur={() => persistNote(shift.id, n.id).catch(console.error)}
-                                                        placeholder="Edit note…"
-                                                        className={[
-                                                            "w-full min-h-[48px] resize-none rounded-lg",
-                                                            "bg-zinc-950/40 border border-white/10",
-                                                            "px-3 py-2 text-sm text-white/90",
-                                                            "placeholder:text-white/30",
-                                                            "outline-none focus:ring-2 focus:ring-white/10",
-                                                        ].join(" ")}
-                                                    />
-                                                ) : (
-                                                    <p>{n.text}</p>
-                                                )}
+                                        <div
+                                            key={n.id}
+                                            className="rounded-xl border border-white/10 bg-white/5 p-3"
+                                        >
+                                            <div className="text-right text-xs text-white/60 mb-2">
+                                                {formatTime(n.createdAt)}
                                             </div>
-                                        </div>
-                                    ))}
 
-                                    {isCurrent && (
-                                        <div className="relative">
-                                            <div className="absolute -left-[2px] top-2 h-3 w-3 rounded-full bg-zinc-950 border border-white/15" />
-
-                                            <div className="rounded-xl border border-white/10 bg-white/5 p-3">
-                                                <div className="flex items-center justify-between gap-3 mb-2">
-                                                    <div className="text-xs text-white/60">—</div>
-                                                    <div className="text-[11px] text-white/45">Draft</div>
-                                                </div>
-
-                                                <textarea
-                                                    value={draftText}
-                                                    onChange={(e) =>
-                                                        setDraftTextByShift((prev) => ({
-                                                            ...prev,
-                                                            [key]: e.target.value,
-                                                        }))
-                                                    }
-                                                    onBlur={() => createNote(shift.id).catch(console.error)}
-                                                    placeholder="Write a turnover note…"
+                                            {editable ? (
+                                                <TextareaAutosize
+                                                    value={n.text}
+                                                    onChange={(e) => setLocalNoteText(shift.id, n.id, e.target.value)}
+                                                    onBlur={() => persistNote(shift.id, n.id).catch(console.error)}
+                                                    placeholder="Edit note…"
                                                     className={[
-                                                        "w-full min-h-[48px] resize-none rounded-lg",
+                                                        "w-full resize-none rounded-lg",
                                                         "bg-zinc-950/40 border border-white/10",
                                                         "px-3 py-2 text-sm text-white/90",
                                                         "placeholder:text-white/30",
                                                         "outline-none focus:ring-2 focus:ring-white/10",
                                                     ].join(" ")}
                                                 />
+                                            ) : (
+                                                <p className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap">{n.text}</p>
+                                            )}
+                                        </div>
+                                    ))}
 
-                                                {draftText.trim().length === 0 && (
-                                                    <div className="mt-2 text-[11px] text-white/40">
-                                                        This draft has no timestamp until you write something.
-                                                    </div>
-                                                )}
+                                    {isCurrent && (
+                                        <div
+                                            className="rounded-xl border border-dashed border-white/15 bg-white/5 p-3"
+                                        >
+                                            <div className="flex items-center justify-between gap-3 mb-2 text-xs text-white/60">
+                                                <span className="font-medium text-white/70">Draft</span>
+                                                <span>Pending timestamp</span>
+                                            </div>
+
+                                            <TextareaAutosize
+                                                value={draftText}
+                                                onChange={(e) =>
+                                                    setDraftTextByShift((prev) => ({
+                                                        ...prev,
+                                                        [key]: e.target.value,
+                                                    }))
+                                                }
+                                                onBlur={() => createNote(shift.id).catch(console.error)}
+                                                placeholder="Write a turnover note…"
+                                                className={[
+                                                    "w-full resize-none rounded-lg",
+                                                    "bg-zinc-950/40 border border-white/10",
+                                                    "px-3 py-2 text-sm text-white/90",
+                                                    "placeholder:text-white/30",
+                                                    "outline-none focus:ring-2 focus:ring-white/10",
+                                                ].join(" ")}
+                                            />
+                                            <div className="mt-2 flex items-center justify-between text-[11px] uppercase tracking-wide text-white/45">
+                                                <span>Saves automatically</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => createNote(shift.id).catch(console.error)}
+                                                    className="rounded px-3 py-1 text-xs font-semibold text-white bg-white/10 hover:bg-white/20 transition"
+                                                >
+                                                    Save
+                                                </button>
                                             </div>
                                         </div>
                                     )}
 
-                                    {isCurrent && <div ref={bottomRef} className="h-1" />}
+                                    {isCurrent && <div ref={bottomRef} tabIndex={-1} className="h-1" />}
                                 </div>
                             </div>
                         )}

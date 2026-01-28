@@ -4,14 +4,14 @@ import {sql} from "drizzle-orm";
 export const notifications = sqliteTable("notifications", {
     id: integer("id").primaryKey({autoIncrement: true}),
 
-    category: text("category", {enum: ["low", "medium", "high"]}).notNull(),
+    level: text("level", {enum: ["low", "medium", "high"]}).notNull(),
 
     title: text("title").notNull(),
     message: text("message").notNull(),
 
-    isRead: integer("is_read", {mode: "boolean"}).notNull().default(false),
-
     createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+    acknowledgedAt: text("acknowledged_at"),
+    resolvedAt: text("resolved_at"),
 });
 
 export type Notification = typeof notifications.$inferSelect;

@@ -1,0 +1,2531 @@
+[
+  {
+    "id": 1,
+    "elementId": "pump_1",
+    "name": "Pump",
+    "type": "pump",
+    "description": {
+      "kind": "pump",
+      "model": "Small circulation pump",
+      "rpm": 1450,
+      "flowRateLpm": 2.5,
+      "headM": 6,
+      "powerKw": 0.37,
+      "efficiencyPct": 55,
+      "installDate": "2025-01-15",
+      "lastServiceAt": "2025-01-16",
+      "maintenanceDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 71,
+          "elementId": "pipe_35",
+          "type": "pipe",
+          "name": "Pipe 35"
+        }
+      ],
+      "to": [
+        {
+          "partId": 37,
+          "elementId": "pipe_1",
+          "type": "pipe",
+          "name": "Pipe 1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "elementId": "tank_1",
+    "name": "Tank 1",
+    "type": "tank",
+    "description": {
+      "kind": "tank",
+      "volumeL": 5,
+      "material": "HDPE",
+      "maxTempC": 80,
+      "levelPct": 50,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 60,
+          "elementId": "pipe_24",
+          "type": "pipe",
+          "name": "Pipe 24"
+        }
+      ],
+      "to": [
+        {
+          "partId": 62,
+          "elementId": "pipe_26",
+          "type": "pipe",
+          "name": "Pipe 26"
+        }
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "elementId": "tank_2",
+    "name": "Tank 2",
+    "type": "tank",
+    "description": {
+      "kind": "tank",
+      "volumeL": 5,
+      "material": "HDPE",
+      "maxTempC": 80,
+      "levelPct": 50,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 61,
+          "elementId": "pipe_25",
+          "type": "pipe",
+          "name": "Pipe 25"
+        }
+      ],
+      "to": [
+        {
+          "partId": 63,
+          "elementId": "pipe_27",
+          "type": "pipe",
+          "name": "Pipe 27"
+        }
+      ]
+    }
+  },
+  {
+    "id": 4,
+    "elementId": "sensor_1",
+    "name": "Sensor 1",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "flow",
+      "unit": "L/min",
+      "range": {
+        "min": 0,
+        "max": 10
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-20",
+      "installDate": "2025-01-18",
+      "calibrationDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 37,
+          "elementId": "pipe_1",
+          "type": "pipe",
+          "name": "Pipe 1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 38,
+          "elementId": "pipe_2",
+          "type": "pipe",
+          "name": "Pipe 2"
+        }
+      ]
+    }
+  },
+  {
+    "id": 5,
+    "elementId": "sensor_2",
+    "name": "Sensor 2",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "temperature",
+      "unit": "°C",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-15",
+      "installDate": "2025-01-19",
+      "calibrationDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 38,
+          "elementId": "pipe_2",
+          "type": "pipe",
+          "name": "Pipe 2"
+        }
+      ],
+      "to": [
+        {
+          "partId": 39,
+          "elementId": "pipe_3",
+          "type": "pipe",
+          "name": "Pipe 3"
+        }
+      ]
+    }
+  },
+  {
+    "id": 6,
+    "elementId": "sensor_3",
+    "name": "Sensor 3",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "flow",
+      "unit": "L/min",
+      "range": {
+        "min": 0,
+        "max": 10
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-16",
+      "installDate": "2025-01-20",
+      "calibrationDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 42,
+          "elementId": "pipe_6",
+          "type": "pipe",
+          "name": "Pipe 6"
+        }
+      ],
+      "to": [
+        {
+          "partId": 43,
+          "elementId": "pipe_7",
+          "type": "pipe",
+          "name": "Pipe 7"
+        }
+      ]
+    }
+  },
+  {
+    "id": 7,
+    "elementId": "sensor_4",
+    "name": "Sensor 4",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "temperature",
+      "unit": "°C",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-17",
+      "installDate": "2025-01-15",
+      "calibrationDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 43,
+          "elementId": "pipe_7",
+          "type": "pipe",
+          "name": "Pipe 7"
+        }
+      ],
+      "to": [
+        {
+          "partId": 44,
+          "elementId": "pipe_8",
+          "type": "pipe",
+          "name": "Pipe 8"
+        }
+      ]
+    }
+  },
+  {
+    "id": 8,
+    "elementId": "sensor_5",
+    "name": "Sensor 5",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "temperature",
+      "unit": "°C",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-18",
+      "installDate": "2025-01-16",
+      "calibrationDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 48,
+          "elementId": "pipe_12",
+          "type": "pipe",
+          "name": "Pipe 12"
+        }
+      ],
+      "to": [
+        {
+          "partId": 49,
+          "elementId": "pipe_13",
+          "type": "pipe",
+          "name": "Pipe 13"
+        }
+      ]
+    }
+  },
+  {
+    "id": 9,
+    "elementId": "sensor_6",
+    "name": "Sensor 6",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "flow",
+      "unit": "L/min",
+      "range": {
+        "min": 0,
+        "max": 10
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-19",
+      "installDate": "2025-01-17",
+      "calibrationDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 49,
+          "elementId": "pipe_13",
+          "type": "pipe",
+          "name": "Pipe 13"
+        }
+      ],
+      "to": [
+        {
+          "partId": 50,
+          "elementId": "pipe_14",
+          "type": "pipe",
+          "name": "Pipe 14"
+        }
+      ]
+    }
+  },
+  {
+    "id": 10,
+    "elementId": "sensor_7",
+    "name": "Sensor 7",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "temperature",
+      "unit": "°C",
+      "range": {
+        "min": 0,
+        "max": 100
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-20",
+      "installDate": "2025-01-18",
+      "calibrationDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 50,
+          "elementId": "pipe_14",
+          "type": "pipe",
+          "name": "Pipe 14"
+        }
+      ],
+      "to": [
+        {
+          "partId": 51,
+          "elementId": "pipe_15",
+          "type": "pipe",
+          "name": "Pipe 15"
+        }
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "elementId": "sensor_8",
+    "name": "Sensor 8",
+    "type": "sensor",
+    "description": {
+      "kind": "sensor",
+      "sensorType": "flow",
+      "unit": "L/min",
+      "range": {
+        "min": 0,
+        "max": 10
+      },
+      "accuracyPct": 2,
+      "lastCalibratedAt": "2025-01-15",
+      "installDate": "2025-01-19",
+      "calibrationDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 51,
+          "elementId": "pipe_15",
+          "type": "pipe",
+          "name": "Pipe 15"
+        }
+      ],
+      "to": [
+        {
+          "partId": 52,
+          "elementId": "pipe_16",
+          "type": "pipe",
+          "name": "Pipe 16"
+        }
+      ]
+    }
+  },
+  {
+    "id": 12,
+    "elementId": "valve_1",
+    "name": "Valve 1",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-20",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 40,
+          "elementId": "pipe_4",
+          "type": "pipe",
+          "name": "Pipe 4"
+        }
+      ],
+      "to": [
+        {
+          "partId": 41,
+          "elementId": "pipe_5",
+          "type": "pipe",
+          "name": "Pipe 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": 13,
+    "elementId": "valve_2",
+    "name": "Valve 2",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-15",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 45,
+          "elementId": "pipe_9",
+          "type": "pipe",
+          "name": "Pipe 9"
+        }
+      ],
+      "to": [
+        {
+          "partId": 46,
+          "elementId": "pipe_10",
+          "type": "pipe",
+          "name": "Pipe 10"
+        }
+      ]
+    }
+  },
+  {
+    "id": 14,
+    "elementId": "valve_3",
+    "name": "Valve 3",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-16",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 47,
+          "elementId": "pipe_11",
+          "type": "pipe",
+          "name": "Pipe 11"
+        }
+      ],
+      "to": [
+        {
+          "partId": 48,
+          "elementId": "pipe_12",
+          "type": "pipe",
+          "name": "Pipe 12"
+        }
+      ]
+    }
+  },
+  {
+    "id": 15,
+    "elementId": "valve_4",
+    "name": "Valve 4",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-17",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 53,
+          "elementId": "pipe_17",
+          "type": "pipe",
+          "name": "Pipe 17"
+        }
+      ],
+      "to": [
+        {
+          "partId": 54,
+          "elementId": "pipe_18",
+          "type": "pipe",
+          "name": "Pipe 18"
+        }
+      ]
+    }
+  },
+  {
+    "id": 16,
+    "elementId": "valve_5",
+    "name": "Valve 5",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-18",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 58,
+          "elementId": "pipe_22",
+          "type": "pipe",
+          "name": "Pipe 22"
+        }
+      ],
+      "to": [
+        {
+          "partId": 60,
+          "elementId": "pipe_24",
+          "type": "pipe",
+          "name": "Pipe 24"
+        }
+      ]
+    }
+  },
+  {
+    "id": 17,
+    "elementId": "valve_6",
+    "name": "Valve 6",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": false,
+      "Cv": 4,
+      "installDate": "2025-01-19",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 59,
+          "elementId": "pipe_23",
+          "type": "pipe",
+          "name": "Pipe 23"
+        }
+      ],
+      "to": [
+        {
+          "partId": 61,
+          "elementId": "pipe_25",
+          "type": "pipe",
+          "name": "Pipe 25"
+        }
+      ]
+    }
+  },
+  {
+    "id": 18,
+    "elementId": "valve_7",
+    "name": "Valve 7",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-20",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 62,
+          "elementId": "pipe_26",
+          "type": "pipe",
+          "name": "Pipe 26"
+        }
+      ],
+      "to": [
+        {
+          "partId": 64,
+          "elementId": "pipe_28",
+          "type": "pipe",
+          "name": "Pipe 28"
+        }
+      ]
+    }
+  },
+  {
+    "id": 19,
+    "elementId": "valve_8",
+    "name": "Valve 8",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": false,
+      "Cv": 4,
+      "installDate": "2025-01-15",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 63,
+          "elementId": "pipe_27",
+          "type": "pipe",
+          "name": "Pipe 27"
+        }
+      ],
+      "to": [
+        {
+          "partId": 65,
+          "elementId": "pipe_29",
+          "type": "pipe",
+          "name": "Pipe 29"
+        }
+      ]
+    }
+  },
+  {
+    "id": 20,
+    "elementId": "valve_9",
+    "name": "Valve 9",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": true,
+      "Cv": 4,
+      "installDate": "2025-01-16",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 69,
+          "elementId": "pipe_33",
+          "type": "pipe",
+          "name": "Pipe 33"
+        }
+      ],
+      "to": [
+        {
+          "partId": 70,
+          "elementId": "pipe_34",
+          "type": "pipe",
+          "name": "Pipe 34"
+        }
+      ]
+    }
+  },
+  {
+    "id": 21,
+    "elementId": "valve_10",
+    "name": "Valve 10",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": false,
+      "Cv": 4,
+      "installDate": "2025-01-17",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 72,
+          "elementId": "pipe_36",
+          "type": "pipe",
+          "name": "Pipe 36"
+        }
+      ],
+      "to": [
+        {
+          "partId": 73,
+          "elementId": "pipe_37",
+          "type": "pipe",
+          "name": "Pipe 37"
+        }
+      ]
+    }
+  },
+  {
+    "id": 22,
+    "elementId": "valve_11",
+    "name": "Valve 11",
+    "type": "valve",
+    "description": {
+      "kind": "valve",
+      "valveType": "ball",
+      "sizeMm": 25,
+      "normallyOpen": false,
+      "Cv": 4,
+      "installDate": "2025-01-18",
+      "cycleCount": 0,
+      "maintenanceDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 74,
+          "elementId": "pipe_38",
+          "type": "pipe",
+          "name": "Pipe 38"
+        }
+      ],
+      "to": [
+        {
+          "partId": 75,
+          "elementId": "pipe_39",
+          "type": "pipe",
+          "name": "Pipe 39"
+        }
+      ]
+    }
+  },
+  {
+    "id": 23,
+    "elementId": "l_1",
+    "name": "Connector L1",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 41,
+          "elementId": "pipe_5",
+          "type": "pipe",
+          "name": "Pipe 5"
+        }
+      ],
+      "to": [
+        {
+          "partId": 42,
+          "elementId": "pipe_6",
+          "type": "pipe",
+          "name": "Pipe 6"
+        }
+      ]
+    }
+  },
+  {
+    "id": 24,
+    "elementId": "l_3",
+    "name": "Connector L3",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 44,
+          "elementId": "pipe_8",
+          "type": "pipe",
+          "name": "Pipe 8"
+        }
+      ],
+      "to": [
+        {
+          "partId": 45,
+          "elementId": "pipe_9",
+          "type": "pipe",
+          "name": "Pipe 9"
+        }
+      ]
+    }
+  },
+  {
+    "id": 25,
+    "elementId": "l_6",
+    "name": "Connector L6",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 54,
+          "elementId": "pipe_18",
+          "type": "pipe",
+          "name": "Pipe 18"
+        }
+      ],
+      "to": [
+        {
+          "partId": 55,
+          "elementId": "pipe_19",
+          "type": "pipe",
+          "name": "Pipe 19"
+        }
+      ]
+    }
+  },
+  {
+    "id": 26,
+    "elementId": "l_8",
+    "name": "Connector L8",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 56,
+          "elementId": "pipe_20",
+          "type": "pipe",
+          "name": "Pipe 20"
+        }
+      ],
+      "to": [
+        {
+          "partId": 58,
+          "elementId": "pipe_22",
+          "type": "pipe",
+          "name": "Pipe 22"
+        }
+      ]
+    }
+  },
+  {
+    "id": 27,
+    "elementId": "l_9",
+    "name": "Connector L9",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 57,
+          "elementId": "pipe_21",
+          "type": "pipe",
+          "name": "Pipe 21"
+        }
+      ],
+      "to": [
+        {
+          "partId": 59,
+          "elementId": "pipe_23",
+          "type": "pipe",
+          "name": "Pipe 23"
+        }
+      ]
+    }
+  },
+  {
+    "id": 28,
+    "elementId": "l_10",
+    "name": "Connector L10",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 64,
+          "elementId": "pipe_28",
+          "type": "pipe",
+          "name": "Pipe 28"
+        }
+      ],
+      "to": [
+        {
+          "partId": 66,
+          "elementId": "pipe_30",
+          "type": "pipe",
+          "name": "Pipe 30"
+        }
+      ]
+    }
+  },
+  {
+    "id": 29,
+    "elementId": "l_11",
+    "name": "Connector L11",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 65,
+          "elementId": "pipe_29",
+          "type": "pipe",
+          "name": "Pipe 29"
+        }
+      ],
+      "to": [
+        {
+          "partId": 67,
+          "elementId": "pipe_31",
+          "type": "pipe",
+          "name": "Pipe 31"
+        }
+      ]
+    }
+  },
+  {
+    "id": 30,
+    "elementId": "l_13",
+    "name": "Connector L13",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "elbow",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 68,
+          "elementId": "pipe_32",
+          "type": "pipe",
+          "name": "Pipe 32"
+        }
+      ],
+      "to": [
+        {
+          "partId": 69,
+          "elementId": "pipe_33",
+          "type": "pipe",
+          "name": "Pipe 33"
+        }
+      ]
+    }
+  },
+  {
+    "id": 31,
+    "elementId": "t_1",
+    "name": "Connector T1",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 39,
+          "elementId": "pipe_3",
+          "type": "pipe",
+          "name": "Pipe 3"
+        }
+      ],
+      "to": [
+        {
+          "partId": 40,
+          "elementId": "pipe_4",
+          "type": "pipe",
+          "name": "Pipe 4"
+        },
+        {
+          "partId": 72,
+          "elementId": "pipe_36",
+          "type": "pipe",
+          "name": "Pipe 36"
+        }
+      ]
+    }
+  },
+  {
+    "id": 32,
+    "elementId": "t_4",
+    "name": "Connector T4",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 46,
+          "elementId": "pipe_10",
+          "type": "pipe",
+          "name": "Pipe 10"
+        },
+        {
+          "partId": 73,
+          "elementId": "pipe_37",
+          "type": "pipe",
+          "name": "Pipe 37"
+        }
+      ],
+      "to": [
+        {
+          "partId": 47,
+          "elementId": "pipe_11",
+          "type": "pipe",
+          "name": "Pipe 11"
+        }
+      ]
+    }
+  },
+  {
+    "id": 33,
+    "elementId": "t_5",
+    "name": "Connector T5",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 52,
+          "elementId": "pipe_16",
+          "type": "pipe",
+          "name": "Pipe 16"
+        }
+      ],
+      "to": [
+        {
+          "partId": 53,
+          "elementId": "pipe_17",
+          "type": "pipe",
+          "name": "Pipe 17"
+        },
+        {
+          "partId": 74,
+          "elementId": "pipe_38",
+          "type": "pipe",
+          "name": "Pipe 38"
+        }
+      ]
+    }
+  },
+  {
+    "id": 34,
+    "elementId": "t_7",
+    "name": "Connector T7",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 55,
+          "elementId": "pipe_19",
+          "type": "pipe",
+          "name": "Pipe 19"
+        }
+      ],
+      "to": [
+        {
+          "partId": 56,
+          "elementId": "pipe_20",
+          "type": "pipe",
+          "name": "Pipe 20"
+        },
+        {
+          "partId": 57,
+          "elementId": "pipe_21",
+          "type": "pipe",
+          "name": "Pipe 21"
+        }
+      ]
+    }
+  },
+  {
+    "id": 35,
+    "elementId": "t_12",
+    "name": "Connector T12",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 66,
+          "elementId": "pipe_30",
+          "type": "pipe",
+          "name": "Pipe 30"
+        },
+        {
+          "partId": 67,
+          "elementId": "pipe_31",
+          "type": "pipe",
+          "name": "Pipe 31"
+        }
+      ],
+      "to": [
+        {
+          "partId": 68,
+          "elementId": "pipe_32",
+          "type": "pipe",
+          "name": "Pipe 32"
+        }
+      ]
+    }
+  },
+  {
+    "id": 36,
+    "elementId": "t_14",
+    "name": "Connector T14",
+    "type": "connector",
+    "description": {
+      "kind": "connector",
+      "connectorType": "tee",
+      "sizeMm": 25,
+      "material": "PVC",
+      "installDate": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 70,
+          "elementId": "pipe_34",
+          "type": "pipe",
+          "name": "Pipe 34"
+        },
+        {
+          "partId": 75,
+          "elementId": "pipe_39",
+          "type": "pipe",
+          "name": "Pipe 39"
+        }
+      ],
+      "to": [
+        {
+          "partId": 71,
+          "elementId": "pipe_35",
+          "type": "pipe",
+          "name": "Pipe 35"
+        }
+      ]
+    }
+  },
+  {
+    "id": 37,
+    "elementId": "pipe_1",
+    "name": "Pipe 1",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 41.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 1,
+          "elementId": "pump_1",
+          "type": "pump",
+          "name": "Pump"
+        }
+      ],
+      "to": [
+        {
+          "partId": 4,
+          "elementId": "sensor_1",
+          "type": "sensor",
+          "name": "Sensor 1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 38,
+    "elementId": "pipe_2",
+    "name": "Pipe 2",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 33.7,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 4,
+          "elementId": "sensor_1",
+          "type": "sensor",
+          "name": "Sensor 1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 5,
+          "elementId": "sensor_2",
+          "type": "sensor",
+          "name": "Sensor 2"
+        }
+      ]
+    }
+  },
+  {
+    "id": 39,
+    "elementId": "pipe_3",
+    "name": "Pipe 3",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 84.7,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 5,
+          "elementId": "sensor_2",
+          "type": "sensor",
+          "name": "Sensor 2"
+        }
+      ],
+      "to": [
+        {
+          "partId": 31,
+          "elementId": "t_1",
+          "type": "connector",
+          "name": "Connector T1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 40,
+    "elementId": "pipe_4",
+    "name": "Pipe 4",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 13,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 31,
+          "elementId": "t_1",
+          "type": "connector",
+          "name": "Connector T1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 12,
+          "elementId": "valve_1",
+          "type": "valve",
+          "name": "Valve 1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 41,
+    "elementId": "pipe_5",
+    "name": "Pipe 5",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 13.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 12,
+          "elementId": "valve_1",
+          "type": "valve",
+          "name": "Valve 1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 23,
+          "elementId": "l_1",
+          "type": "connector",
+          "name": "Connector L1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 42,
+    "elementId": "pipe_6",
+    "name": "Pipe 6",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 227.5,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 23,
+          "elementId": "l_1",
+          "type": "connector",
+          "name": "Connector L1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 6,
+          "elementId": "sensor_3",
+          "type": "sensor",
+          "name": "Sensor 3"
+        }
+      ]
+    }
+  },
+  {
+    "id": 43,
+    "elementId": "pipe_7",
+    "name": "Pipe 7",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 33.7,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 6,
+          "elementId": "sensor_3",
+          "type": "sensor",
+          "name": "Sensor 3"
+        }
+      ],
+      "to": [
+        {
+          "partId": 7,
+          "elementId": "sensor_4",
+          "type": "sensor",
+          "name": "Sensor 4"
+        }
+      ]
+    }
+  },
+  {
+    "id": 44,
+    "elementId": "pipe_8",
+    "name": "Pipe 8",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 27.5,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 7,
+          "elementId": "sensor_4",
+          "type": "sensor",
+          "name": "Sensor 4"
+        }
+      ],
+      "to": [
+        {
+          "partId": 24,
+          "elementId": "l_3",
+          "type": "connector",
+          "name": "Connector L3"
+        }
+      ]
+    }
+  },
+  {
+    "id": 45,
+    "elementId": "pipe_9",
+    "name": "Pipe 9",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 13.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 24,
+          "elementId": "l_3",
+          "type": "connector",
+          "name": "Connector L3"
+        }
+      ],
+      "to": [
+        {
+          "partId": 13,
+          "elementId": "valve_2",
+          "type": "valve",
+          "name": "Valve 2"
+        }
+      ]
+    }
+  },
+  {
+    "id": 46,
+    "elementId": "pipe_10",
+    "name": "Pipe 10",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 12.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 13,
+          "elementId": "valve_2",
+          "type": "valve",
+          "name": "Valve 2"
+        }
+      ],
+      "to": [
+        {
+          "partId": 32,
+          "elementId": "t_4",
+          "type": "connector",
+          "name": "Connector T4"
+        }
+      ]
+    }
+  },
+  {
+    "id": 47,
+    "elementId": "pipe_11",
+    "name": "Pipe 11",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 12.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 32,
+          "elementId": "t_4",
+          "type": "connector",
+          "name": "Connector T4"
+        }
+      ],
+      "to": [
+        {
+          "partId": 14,
+          "elementId": "valve_3",
+          "type": "valve",
+          "name": "Valve 3"
+        }
+      ]
+    }
+  },
+  {
+    "id": 48,
+    "elementId": "pipe_12",
+    "name": "Pipe 12",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 38.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 14,
+          "elementId": "valve_3",
+          "type": "valve",
+          "name": "Valve 3"
+        }
+      ],
+      "to": [
+        {
+          "partId": 8,
+          "elementId": "sensor_5",
+          "type": "sensor",
+          "name": "Sensor 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": 49,
+    "elementId": "pipe_13",
+    "name": "Pipe 13",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 19.9,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 8,
+          "elementId": "sensor_5",
+          "type": "sensor",
+          "name": "Sensor 5"
+        }
+      ],
+      "to": [
+        {
+          "partId": 9,
+          "elementId": "sensor_6",
+          "type": "sensor",
+          "name": "Sensor 6"
+        }
+      ]
+    }
+  },
+  {
+    "id": 50,
+    "elementId": "pipe_14",
+    "name": "Pipe 14",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 83.2,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 9,
+          "elementId": "sensor_6",
+          "type": "sensor",
+          "name": "Sensor 6"
+        }
+      ],
+      "to": [
+        {
+          "partId": 10,
+          "elementId": "sensor_7",
+          "type": "sensor",
+          "name": "Sensor 7"
+        }
+      ]
+    }
+  },
+  {
+    "id": 51,
+    "elementId": "pipe_15",
+    "name": "Pipe 15",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 20.4,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 10,
+          "elementId": "sensor_7",
+          "type": "sensor",
+          "name": "Sensor 7"
+        }
+      ],
+      "to": [
+        {
+          "partId": 11,
+          "elementId": "sensor_8",
+          "type": "sensor",
+          "name": "Sensor 8"
+        }
+      ]
+    }
+  },
+  {
+    "id": 52,
+    "elementId": "pipe_16",
+    "name": "Pipe 16",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 82.6,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 11,
+          "elementId": "sensor_8",
+          "type": "sensor",
+          "name": "Sensor 8"
+        }
+      ],
+      "to": [
+        {
+          "partId": 33,
+          "elementId": "t_5",
+          "type": "connector",
+          "name": "Connector T5"
+        }
+      ]
+    }
+  },
+  {
+    "id": 53,
+    "elementId": "pipe_17",
+    "name": "Pipe 17",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 27.5,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 33,
+          "elementId": "t_5",
+          "type": "connector",
+          "name": "Connector T5"
+        }
+      ],
+      "to": [
+        {
+          "partId": 15,
+          "elementId": "valve_4",
+          "type": "valve",
+          "name": "Valve 4"
+        }
+      ]
+    }
+  },
+  {
+    "id": 54,
+    "elementId": "pipe_18",
+    "name": "Pipe 18",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 33.2,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 15,
+          "elementId": "valve_4",
+          "type": "valve",
+          "name": "Valve 4"
+        }
+      ],
+      "to": [
+        {
+          "partId": 25,
+          "elementId": "l_6",
+          "type": "connector",
+          "name": "Connector L6"
+        }
+      ]
+    }
+  },
+  {
+    "id": 55,
+    "elementId": "pipe_19",
+    "name": "Pipe 19",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 31.6,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 25,
+          "elementId": "l_6",
+          "type": "connector",
+          "name": "Connector L6"
+        }
+      ],
+      "to": [
+        {
+          "partId": 34,
+          "elementId": "t_7",
+          "type": "connector",
+          "name": "Connector T7"
+        }
+      ]
+    }
+  },
+  {
+    "id": 56,
+    "elementId": "pipe_20",
+    "name": "Pipe 20",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 15.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 34,
+          "elementId": "t_7",
+          "type": "connector",
+          "name": "Connector T7"
+        }
+      ],
+      "to": [
+        {
+          "partId": 26,
+          "elementId": "l_8",
+          "type": "connector",
+          "name": "Connector L8"
+        }
+      ]
+    }
+  },
+  {
+    "id": 57,
+    "elementId": "pipe_21",
+    "name": "Pipe 21",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 14.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 34,
+          "elementId": "t_7",
+          "type": "connector",
+          "name": "Connector T7"
+        }
+      ],
+      "to": [
+        {
+          "partId": 27,
+          "elementId": "l_9",
+          "type": "connector",
+          "name": "Connector L9"
+        }
+      ]
+    }
+  },
+  {
+    "id": 58,
+    "elementId": "pipe_22",
+    "name": "Pipe 22",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 12.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 26,
+          "elementId": "l_8",
+          "type": "connector",
+          "name": "Connector L8"
+        }
+      ],
+      "to": [
+        {
+          "partId": 16,
+          "elementId": "valve_5",
+          "type": "valve",
+          "name": "Valve 5"
+        }
+      ]
+    }
+  },
+  {
+    "id": 59,
+    "elementId": "pipe_23",
+    "name": "Pipe 23",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 12.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 27,
+          "elementId": "l_9",
+          "type": "connector",
+          "name": "Connector L9"
+        }
+      ],
+      "to": [
+        {
+          "partId": 17,
+          "elementId": "valve_6",
+          "type": "valve",
+          "name": "Valve 6"
+        }
+      ]
+    }
+  },
+  {
+    "id": 60,
+    "elementId": "pipe_24",
+    "name": "Pipe 24",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 30.1,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 16,
+          "elementId": "valve_5",
+          "type": "valve",
+          "name": "Valve 5"
+        }
+      ],
+      "to": [
+        {
+          "partId": 2,
+          "elementId": "tank_1",
+          "type": "tank",
+          "name": "Tank 1"
+        }
+      ]
+    }
+  },
+  {
+    "id": 61,
+    "elementId": "pipe_25",
+    "name": "Pipe 25",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 30.1,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 17,
+          "elementId": "valve_6",
+          "type": "valve",
+          "name": "Valve 6"
+        }
+      ],
+      "to": [
+        {
+          "partId": 3,
+          "elementId": "tank_2",
+          "type": "tank",
+          "name": "Tank 2"
+        }
+      ]
+    }
+  },
+  {
+    "id": 62,
+    "elementId": "pipe_26",
+    "name": "Pipe 26",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 23.5,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 2,
+          "elementId": "tank_1",
+          "type": "tank",
+          "name": "Tank 1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 18,
+          "elementId": "valve_7",
+          "type": "valve",
+          "name": "Valve 7"
+        }
+      ]
+    }
+  },
+  {
+    "id": 63,
+    "elementId": "pipe_27",
+    "name": "Pipe 27",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 23.5,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 3,
+          "elementId": "tank_2",
+          "type": "tank",
+          "name": "Tank 2"
+        }
+      ],
+      "to": [
+        {
+          "partId": 19,
+          "elementId": "valve_8",
+          "type": "valve",
+          "name": "Valve 8"
+        }
+      ]
+    }
+  },
+  {
+    "id": 64,
+    "elementId": "pipe_28",
+    "name": "Pipe 28",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 13.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 18,
+          "elementId": "valve_7",
+          "type": "valve",
+          "name": "Valve 7"
+        }
+      ],
+      "to": [
+        {
+          "partId": 28,
+          "elementId": "l_10",
+          "type": "connector",
+          "name": "Connector L10"
+        }
+      ]
+    }
+  },
+  {
+    "id": 65,
+    "elementId": "pipe_29",
+    "name": "Pipe 29",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 12.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 19,
+          "elementId": "valve_8",
+          "type": "valve",
+          "name": "Valve 8"
+        }
+      ],
+      "to": [
+        {
+          "partId": 29,
+          "elementId": "l_11",
+          "type": "connector",
+          "name": "Connector L11"
+        }
+      ]
+    }
+  },
+  {
+    "id": 66,
+    "elementId": "pipe_30",
+    "name": "Pipe 30",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 14.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 28,
+          "elementId": "l_10",
+          "type": "connector",
+          "name": "Connector L10"
+        }
+      ],
+      "to": [
+        {
+          "partId": 35,
+          "elementId": "t_12",
+          "type": "connector",
+          "name": "Connector T12"
+        }
+      ]
+    }
+  },
+  {
+    "id": 67,
+    "elementId": "pipe_31",
+    "name": "Pipe 31",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 14.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 29,
+          "elementId": "l_11",
+          "type": "connector",
+          "name": "Connector L11"
+        }
+      ],
+      "to": [
+        {
+          "partId": 35,
+          "elementId": "t_12",
+          "type": "connector",
+          "name": "Connector T12"
+        }
+      ]
+    }
+  },
+  {
+    "id": 68,
+    "elementId": "pipe_32",
+    "name": "Pipe 32",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 64.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 35,
+          "elementId": "t_12",
+          "type": "connector",
+          "name": "Connector T12"
+        }
+      ],
+      "to": [
+        {
+          "partId": 30,
+          "elementId": "l_13",
+          "type": "connector",
+          "name": "Connector L13"
+        }
+      ]
+    }
+  },
+  {
+    "id": 69,
+    "elementId": "pipe_33",
+    "name": "Pipe 33",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 31.6,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 30,
+          "elementId": "l_13",
+          "type": "connector",
+          "name": "Connector L13"
+        }
+      ],
+      "to": [
+        {
+          "partId": 20,
+          "elementId": "valve_9",
+          "type": "valve",
+          "name": "Valve 9"
+        }
+      ]
+    }
+  },
+  {
+    "id": 70,
+    "elementId": "pipe_34",
+    "name": "Pipe 34",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 28.1,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-18",
+      "inspectionDue": "2025-01-16"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 20,
+          "elementId": "valve_9",
+          "type": "valve",
+          "name": "Valve 9"
+        }
+      ],
+      "to": [
+        {
+          "partId": 36,
+          "elementId": "t_14",
+          "type": "connector",
+          "name": "Connector T14"
+        }
+      ]
+    }
+  },
+  {
+    "id": 71,
+    "elementId": "pipe_35",
+    "name": "Pipe 35",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 163.8,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-19",
+      "inspectionDue": "2025-01-17"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 36,
+          "elementId": "t_14",
+          "type": "connector",
+          "name": "Connector T14"
+        }
+      ],
+      "to": [
+        {
+          "partId": 1,
+          "elementId": "pump_1",
+          "type": "pump",
+          "name": "Pump"
+        }
+      ]
+    }
+  },
+  {
+    "id": 72,
+    "elementId": "pipe_36",
+    "name": "Pipe 36",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 32.1,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-20",
+      "inspectionDue": "2025-01-18"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 31,
+          "elementId": "t_1",
+          "type": "connector",
+          "name": "Connector T1"
+        }
+      ],
+      "to": [
+        {
+          "partId": 21,
+          "elementId": "valve_10",
+          "type": "valve",
+          "name": "Valve 10"
+        }
+      ]
+    }
+  },
+  {
+    "id": 73,
+    "elementId": "pipe_37",
+    "name": "Pipe 37",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 290.3,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-15",
+      "inspectionDue": "2025-01-19"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 21,
+          "elementId": "valve_10",
+          "type": "valve",
+          "name": "Valve 10"
+        }
+      ],
+      "to": [
+        {
+          "partId": 32,
+          "elementId": "t_4",
+          "type": "connector",
+          "name": "Connector T4"
+        }
+      ]
+    }
+  },
+  {
+    "id": 74,
+    "elementId": "pipe_38",
+    "name": "Pipe 38",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 26,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-16",
+      "inspectionDue": "2025-01-20"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 33,
+          "elementId": "t_5",
+          "type": "connector",
+          "name": "Connector T5"
+        }
+      ],
+      "to": [
+        {
+          "partId": 22,
+          "elementId": "valve_11",
+          "type": "valve",
+          "name": "Valve 11"
+        }
+      ]
+    }
+  },
+  {
+    "id": 75,
+    "elementId": "pipe_39",
+    "name": "Pipe 39",
+    "type": "pipe",
+    "description": {
+      "kind": "pipe",
+      "material": "PVC",
+      "diameterMm": 25,
+      "lengthMm": 296.9,
+      "maxPressureBar": 4,
+      "installDate": "2025-01-17",
+      "inspectionDue": "2025-01-15"
+    },
+    "connections": {
+      "from": [
+        {
+          "partId": 22,
+          "elementId": "valve_11",
+          "type": "valve",
+          "name": "Valve 11"
+        }
+      ],
+      "to": [
+        {
+          "partId": 36,
+          "elementId": "t_14",
+          "type": "connector",
+          "name": "Connector T14"
+        }
+      ]
+    }
+  }
+]
