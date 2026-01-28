@@ -309,7 +309,7 @@ export const FailureTreePanel = () => {
                                 type="button"
                                 aria-label={isCollapsed ? "Expand branch" : "Collapse branch"}
                                 onClick={() => toggleCollapse(node.id)}
-                                className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border border-white/40 bg-zinc-900/80 text-xs text-white/80 transition hover:border-white/80 hover:bg-white/15"
+                                className="absolute left-1/2 top-full mt-2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-white/40 bg-zinc-900/80 text-xs text-white/80 transition hover:border-white/80 hover:bg-white/15"
                             >
                                 {isCollapsed ? "+" : "−"}
                             </button>
@@ -324,9 +324,9 @@ export const FailureTreePanel = () => {
     return (
         <NodeRegistryProvider>
             <div className="relative w-full max-w-full min-w-0 min-h-0 flex flex-col gap-4 text-white/80">
-                <div className="text-sm text-white/60 flex-none">
-                    Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.
-                </div>
+                {/*<div className="text-sm text-white/60 flex-none">*/}
+                {/*    Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.*/}
+                {/*</div>*/}
                 <div className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
                     <div
                         ref={containerRef}
