@@ -66,8 +66,18 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
     const lines = data?.tooltip?.lines ?? ["No data available."];
     const description = data?.part?.description ?? null;
     const partType = data?.part?.type;
+    const elementId = data?.part?.elementId ?? "";
     const history = data?.history ?? [];
     const showChart = partType === "sensor";
+
+    const sensorAxisLabel = useMemo(() => {
+        if (partType !== "sensor") return "";
+        const flowSensors = new Set(["sensor_1", "sensor_3", "sensor_6", "sensor_8"]);
+        const tempSensors = new Set(["sensor_2", "sensor_4", "sensor_5", "sensor_7"]);
+        if (flowSensors.has(elementId)) return "Flow (L/min)";
+        if (tempSensors.has(elementId)) return "Temperature (C)";
+        return "Value";
+    }, [partType, elementId]);
 
     const parsedHistory = useMemo(
         () =>
@@ -132,10 +142,13 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
                 y: {
                     ticks: { color: "#a1a1aa" },
                     grid: { color: "rgba(255,255,255,0.08)" },
+                    title: sensorAxisLabel
+                        ? { display: true, text: sensorAxisLabel, color: "#a1a1aa" }
+                        : { display: false, text: "" },
                 },
             },
         }),
-        [],
+        [sensorAxisLabel],
     );
 
     const style = "text-white/60 text-sm m-auto";
@@ -183,20 +196,6 @@ export const InfoPanel = ({selectedPartId}: { selectedPartId: string | null }) =
                         <div className="space-y-2">
                             <div className="h-40">
                                 <Line data={chartData} options={chartOptions} />
-                            </div>
-                            <div className="flex justify-between text-xs text-white/60">
-                                <span>
-                                    Min:{" "}
-                                    <span className="text-white/80">
-                                        {minValue != null ? minValue.toFixed(2) : "—"}
-                                    </span>
-                                </span>
-                                <span>
-                                    Max:{" "}
-                                    <span className="text-white/80">
-                                        {maxValue != null ? maxValue.toFixed(2) : "—"}
-                                    </span>
-                                </span>
                             </div>
                         </div>
                     ) : (

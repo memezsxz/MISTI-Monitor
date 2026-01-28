@@ -35,7 +35,7 @@ const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent
 };
 
 const H_SPACING = 320;
-const V_SPACING = 210;
+const V_SPACING = 250;
 const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 2;
 const DEFAULT_COLLAPSE_DEPTH = 4;

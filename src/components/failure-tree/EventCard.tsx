@@ -46,7 +46,7 @@ export const FailureEventCard = ({
                 {event.name}
             </p>
             <div className="max-h-0 w-full overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-64 group-hover:opacity-100">
-                <p className="mt-2 text-sm font-semibold uppercase tracking-wide text-white/70">{styles.label}</p>
+                {/*<p className="mt-2 text-sm font-semibold uppercase tracking-wide text-white/70">{styles.label}</p>*/}
 
                 {event.description && (
                     <p className="mt-1 text-sm text-white/70">{event.description}</p>
@@ -56,15 +56,15 @@ export const FailureEventCard = ({
                     <p className="mt-2 text-xs text-white/60">{metrics.join(" • ")}</p>
                 )}
 
-                {event.tags && event.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                        {event.tags.map((tag) => (
-                            <span key={tag} className="border border-white/15 px-2 py-[1px] text-[0.6rem] uppercase tracking-wide text-white/60">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
+                {/*{event.tags && event.tags.length > 0 && (*/}
+                {/*    <div className="mt-2 flex flex-wrap gap-1">*/}
+                {/*        {event.tags.map((tag) => (*/}
+                {/*            <span key={tag} className="border border-white/15 px-2 py-[1px] text-[0.6rem] uppercase tracking-wide text-white/60">*/}
+                {/*                {tag}*/}
+                {/*            </span>*/}
+                {/*        ))}*/}
+                {/*    </div>*/}
+                {/*)}*/}
 
                 {children && <div className="mt-4">{children}</div>}
             </div>

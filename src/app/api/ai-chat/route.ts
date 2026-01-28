@@ -7,6 +7,7 @@ import { resolve } from "node:path";
 import { db } from "@/db/db";
 import { aiChat } from "@/db/schema/ai_chat";
 import { sensorReadings } from "@/db/schema";
+import failureTreeStore from "@/data/failure-tree-store.json";
 import pumpPlanStore from "@/data/pump-plan-store.json";
 import { gte } from "drizzle-orm";
 import { formatLocalDateTime } from "@/lib/localDate";
@@ -113,13 +114,46 @@ async function buildSensorContext(): Promise<string> {
     return sections.join("\n");
 }
 
-function buildPrompt(question: string, sensorContext: string) {
+type FailureTreeStoreEntry = {
+    id: string;
+    name: string;
+    kind: string;
+    description: string | null;
+    severity: string | null;
+    detection: string | null;
+    probability: number | null;
+    metadata: Record<string, unknown> | null;
+    tags: string[] | null;
+    children: Array<{ id: string; name: string; kind: string }>;
+};
+
+const failureTreeEntries = failureTreeStore as FailureTreeStoreEntry[];
+
+function buildFailureTreeContext(): string {
+    if (failureTreeEntries.length === 0) {
+        return "No failure tree events available.";
+    }
+
+    return failureTreeEntries
+        .map((node) => {
+            const childText =
+                node.children.length > 0
+                    ? node.children.map((child) => `${child.name} [${child.kind}]`).join(", ")
+                    : "none";
+            return `${node.name} [${node.kind}]: children=[${childText}]`;
+        })
+        .join("\n");
+}
+
+function buildPrompt(question: string, sensorContext: string, failureTreeContext: string) {
     return [
         "System: You are an on-site engineer dedicated to the Misti pump plan. Use only the provided context (pump plan, failure logic, sensor data) to answer, but never mention code, files, functions, or phrases such as 'based on the data/context'. Speak as if the knowledge is native to you. If the user question is not about this system—or the context lacks the necessary information—reply exactly with: Please ask questions related to the system. Do not improvise or answer unrelated topics.",
         "Context:",
         pumpPlanContext,
         "Failure analysis logic:",
         aiLogicContext || "Unavailable",
+        "Failure tree:",
+        failureTreeContext,
         "Sensor readings (past hour):",
         sensorContext,
         "User question:",
@@ -181,7 +215,8 @@ export async function POST(req: Request) {
         }
 
         const sensorContext = await buildSensorContext();
-        const answer = await generateAnswer(buildPrompt(question, sensorContext));
+        const failureTreeContext = buildFailureTreeContext();
+        const answer = await generateAnswer(buildPrompt(question, sensorContext, failureTreeContext));
         if (!answer) {
             return NextResponse.json({ error: "AI did not return a response." }, { status: 502 });
         }
