@@ -4,11 +4,11 @@ import {ReactNode} from "react";
 
 export type FailureEventVariant = "basic" | "failureMode" | "intermediate" | "top";
 
-const variantStyleMap: Record<FailureEventVariant, { border: string; label: string; }> = {
-    basic: {border: "border-emerald-500/70", label: "Basic"},
-    failureMode: {border: "border-rose-500/70", label: "Failure Mode"},
-    intermediate: {border: "border-sky-500/70", label: "Intermediate"},
-    top: {border: "border-amber-400", label: "Top"},
+const variantStyleMap: Record<FailureEventVariant, { border: string; label: string; bg: string }> = {
+    basic: {border: "border-white/80", bg: "bg-emerald-900", label: "Basic"},
+    failureMode: {border: "border-white/80", bg: "bg-rose-900", label: "Failure Mode"},
+    intermediate: {border: "border-white/80", bg: "bg-sky-950", label: "Intermediate"},
+    top: {border: "border-white/80", bg: "bg-amber-900", label: "Top"},
 };
 
 export interface FailureEventCardProps {
@@ -36,12 +36,13 @@ export const FailureEventCard = ({
     return (
         <div
             className={clsx(
-                "group inline-flex w-64 flex-col items-center rounded-md border-2 bg-zinc-950/70 px-4 py-3 text-white/85 transition-colors",
+                "group inline-flex w-64 flex-col items-center rounded-md border-2 px-4 py-3 text-white/85 backdrop-blur-sm transition-colors",
+                styles.bg,
                 styles.border,
-                highlight && "ring-2 ring-white/60"
+                highlight && "ring-2 ring-white/30"
             )}
         >
-            <p className="w-full text-center text-base font-semibold text-white transition-all group-hover:text-left">
+            <p className="w-full text-center bg- text-base font-semibold text-white transition-all group-hover:text-left">
                 {event.name}
             </p>
             <div className="max-h-0 w-full overflow-hidden opacity-0 transition-all duration-200 group-hover:max-h-64 group-hover:opacity-100">

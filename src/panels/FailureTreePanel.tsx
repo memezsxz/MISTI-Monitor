@@ -1,6 +1,6 @@
 "use client";
 
-import {JSX, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {JSX, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {
     BasicEventCard,
     FailureEventVariant,
@@ -36,6 +36,9 @@ const EVENT_COMPONENTS: Record<FailureEventVariant, (props: {event: FailureEvent
 
 const H_SPACING = 320;
 const V_SPACING = 210;
+const MIN_ZOOM = 0.05;
+const MAX_ZOOM = 2;
+const DEFAULT_COLLAPSE_DEPTH = 4;
 
 const mapNodeToEvent = (node: FailureTreeNodePayload, variant: FailureEventVariant): FailureEvent => {
     const probability = node.probability ?? undefined;
@@ -200,6 +203,21 @@ const layoutForest = (forest: RenderTreeNode[], collapsed: Set<string>): Positio
     return {nodes: positionedNodes, edges: positionedEdges, childMap};
 };
 
+const buildDefaultCollapsed = (forest: RenderTreeNode[]): Set<string> => {
+    const collapsed = new Set<string>();
+
+    const walk = (node: RenderTreeNode, depth: number) => {
+        if (depth >= DEFAULT_COLLAPSE_DEPTH && node.children.length > 0) {
+            collapsed.add(node.renderId);
+            return;
+        }
+        node.children.forEach((child) => walk(child.node, depth + 1));
+    };
+
+    forest.forEach((tree) => walk(tree, 0));
+    return collapsed;
+};
+
 const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; height: number} | null => {
     if (nodes.length === 0) return null;
     const xs = nodes.map((node) => node.position.x);
@@ -216,10 +234,15 @@ const computeLayoutBounds = (nodes: FailureTreeNodePayload[]): {width: number; h
 
 export const FailureTreePanel = () => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const viewportRef = useRef<HTMLDivElement>(null);
+    const anchorRef = useRef<{id: string; offsetX: number; offsetY: number} | null>(null);
     const [data, setData] = useState<FailureTreeData | null>(null);
     const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [autoFit, setAutoFit] = useState(true);
+    const zoomRef = useRef(1);
 
     useEffect(() => {
         let active = true;
@@ -247,10 +270,67 @@ export const FailureTreePanel = () => {
     }, []);
 
     useEffect(() => {
+        zoomRef.current = zoom;
+    }, [zoom]);
+
+    const zoomTo = useCallback((nextZoom: number, focal?: {x: number; y: number}) => {
+        const viewport = viewportRef.current;
+        if (!viewport) {
+            setZoom(nextZoom);
+            return;
+        }
+
+        const rect = viewport.getBoundingClientRect();
+        const focusX = focal?.x ?? rect.left + rect.width / 2;
+        const focusY = focal?.y ?? rect.top + rect.height / 2;
+        const offsetX = focusX - rect.left;
+        const offsetY = focusY - rect.top;
+        const currentZoom = zoomRef.current || 1;
+        if (Math.abs(nextZoom - currentZoom) < 0.001) return;
+
+        const contentX = (viewport.scrollLeft + offsetX) / currentZoom;
+        const contentY = (viewport.scrollTop + offsetY) / currentZoom;
+
+        setZoom(nextZoom);
+        requestAnimationFrame(() => {
+            viewport.scrollLeft = contentX * nextZoom - offsetX;
+            viewport.scrollTop = contentY * nextZoom - offsetY;
+        });
+    }, []);
+
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        const onWheel = (event: WheelEvent) => {
+            if (!event.ctrlKey) return;
+            event.preventDefault();
+            setAutoFit(false);
+            const zoomSpeed = 0.0015;
+            const factor = Math.exp(-event.deltaY * zoomSpeed);
+            const nextZoom = Math.min(Math.max(zoomRef.current * factor, MIN_ZOOM), MAX_ZOOM);
+            zoomTo(nextZoom, {x: event.clientX, y: event.clientY});
+        };
+
+        viewport.addEventListener("wheel", onWheel, {passive: false});
+        return () => {
+            viewport.removeEventListener("wheel", onWheel);
+        };
+    }, []);
+
+    useEffect(() => {
         setCollapsed(new Set());
+        setAutoFit(true);
     }, [data]);
 
     const forest = useMemo(() => buildRenderForest(data), [data]);
+
+    useEffect(() => {
+        if (forest.length === 0) return;
+        const defaults = buildDefaultCollapsed(forest);
+        setCollapsed(defaults);
+        setAutoFit(true);
+    }, [forest]);
     const layoutResult = useMemo(() => layoutForest(forest, collapsed), [forest, collapsed]);
 
     const layoutBounds = useMemo(
@@ -258,12 +338,54 @@ export const FailureTreePanel = () => {
         [layoutResult],
     );
 
+    useLayoutEffect(() => {
+        if (!autoFit) return;
+        if (!layoutBounds || !viewportRef.current) return;
+        const {width: viewW, height: viewH} = viewportRef.current.getBoundingClientRect();
+        if (viewW === 0 || viewH === 0) return;
+        const fitScale = Math.min(viewW / layoutBounds.width, viewH / layoutBounds.height, 1);
+        zoomTo(Math.max(fitScale, MIN_ZOOM));
+    }, [layoutBounds, autoFit, zoomTo]);
+
+    useLayoutEffect(() => {
+        if (!anchorRef.current) return;
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+        const anchor = anchorRef.current;
+        const el = viewport.querySelector<HTMLElement>(`[data-node-id="${anchor.id}"]`);
+        if (!el) return;
+        const elRect = el.getBoundingClientRect();
+        const viewRect = viewport.getBoundingClientRect();
+        const currentLeft = elRect.left + elRect.width / 2 - viewRect.left;
+        const currentTop = elRect.top + elRect.height / 2 - viewRect.top;
+
+        const deltaX = currentLeft - anchor.offsetX;
+        const deltaY = currentTop - anchor.offsetY;
+
+        viewport.scrollLeft += deltaX;
+        viewport.scrollTop += deltaY;
+        anchorRef.current = null;
+    }, [layoutResult]);
+
     const edges: TreeEdge[] = useMemo(() => {
         if (!layoutResult) return [];
         return layoutResult.edges.map((edge) => ({from: edge.fromEventId, to: edge.toEventId}));
     }, [layoutResult]);
 
     const toggleCollapse = useCallback((renderId: string) => {
+        const viewport = viewportRef.current;
+        if (viewport) {
+            const el = viewport.querySelector<HTMLElement>(`[data-node-id="${renderId}"]`);
+            if (el) {
+                const elRect = el.getBoundingClientRect();
+                const viewRect = viewport.getBoundingClientRect();
+                anchorRef.current = {
+                    id: renderId,
+                    offsetX: elRect.left + elRect.width / 2 - viewRect.left,
+                    offsetY: elRect.top + elRect.height / 2 - viewRect.top,
+                };
+            }
+        }
         setCollapsed((prev) => {
             const next = new Set(prev);
             if (next.has(renderId)) {
@@ -274,6 +396,27 @@ export const FailureTreePanel = () => {
             return next;
         });
     }, []);
+
+    const handleZoomIn = useCallback(() => {
+        setAutoFit(false);
+        const nextZoom = Math.min(zoomRef.current + 0.1, MAX_ZOOM);
+        zoomTo(nextZoom);
+    }, []);
+
+    const handleZoomOut = useCallback(() => {
+        setAutoFit(false);
+        const nextZoom = Math.max(zoomRef.current - 0.1, MIN_ZOOM);
+        zoomTo(nextZoom);
+    }, []);
+
+    const handleZoomFit = useCallback(() => {
+        if (!layoutBounds || !viewportRef.current) return;
+        const {width: viewW, height: viewH} = viewportRef.current.getBoundingClientRect();
+        if (viewW === 0 || viewH === 0) return;
+        const fitScale = Math.min(viewW / layoutBounds.width, viewH / layoutBounds.height, 1);
+        setAutoFit(true);
+        zoomTo(Math.max(fitScale, MIN_ZOOM));
+    }, [layoutBounds, zoomTo]);
 
     const nodes = useMemo(() => {
         if (!layoutResult) return [];
@@ -309,7 +452,7 @@ export const FailureTreePanel = () => {
                                 type="button"
                                 aria-label={isCollapsed ? "Expand branch" : "Collapse branch"}
                                 onClick={() => toggleCollapse(node.id)}
-                                className="absolute left-1/2 top-full mt-2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-white/40 bg-zinc-900/80 text-xs text-white/80 transition hover:border-white/80 hover:bg-white/15"
+                                className="absolute left-1/2 top-full mt-2 flex h-5 w-5 -translate-x-1/2 items-center justify-center rounded-full border border-sky-300/50 bg-zinc-950/60 text-xs text-white/80 transition hover:border-sky-200 hover:bg-sky-500/10"
                             >
                                 {isCollapsed ? "+" : "−"}
                             </button>
@@ -324,36 +467,60 @@ export const FailureTreePanel = () => {
     return (
         <NodeRegistryProvider>
             <div className="relative w-full max-w-full min-w-0 min-h-0 flex flex-col gap-4 text-white/80">
-                {/*<div className="text-sm text-white/60 flex-none">*/}
-                {/*    Bottom-up tree layout duplicates shared events per branch, so every child sits directly beneath its parent with clean orthogonal connectors.*/}
-                {/*</div>*/}
-                <div className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-white/10 bg-zinc-950/40 px-2 py-6">
+                <div className="flex w-full items-start gap-4">
+                    <div className="ml-auto flex items-center gap-2 rounded-full border border-sky-400/40 bg-zinc-950/50 px-3 py-1 text-xs text-white/70 shadow-sm shadow-sky-900/30">
+                        <button type="button" onClick={handleZoomOut} className="px-2 py-1 hover:text-white">−</button>
+                        <span>{Math.round(zoom * 100)}%</span>
+                        <button type="button" onClick={handleZoomIn} className="px-2 py-1 hover:text-white">+</button>
+                        <button type="button" onClick={handleZoomFit} className="px-2 py-1 hover:text-white">Fit</button>
+                    </div>
+                </div>
+                <div
+                    ref={viewportRef}
+                    className="relative h-[70vh] w-0 min-w-full max-w-full min-h-0 flex-none overflow-auto rounded-lg border border-sky-500/10 bg-zinc-950/30 px-2 py-6"
+                >
                     <div
-                        ref={containerRef}
                         className="relative inline-block"
                         style={
                             layoutBounds
-                                ? {width: `${layoutBounds.width}px`, height: `${layoutBounds.height}px`}
+                                ? {
+                                    width: `${layoutBounds.width * zoom}px`,
+                                    height: `${layoutBounds.height * zoom}px`,
+                                }
                                 : {minHeight: "320px"}
                         }
                     >
-                        {layoutBounds && <ConnectorLayer containerRef={containerRef} edges={edges} />}
-                        {nodes}
-                        {loading && (
-                            <div className="absolute left-4 top-4 rounded-md bg-zinc-900/80 px-3 py-2 text-xs text-white/70">
-                                Loading tree…
-                            </div>
-                        )}
-                        {error && !loading && (
-                            <div className="absolute left-4 top-4 rounded-md bg-red-900/80 px-3 py-2 text-xs text-white/90">
-                                {error}
-                            </div>
-                        )}
-                        {!loading && !error && nodes.length === 0 && (
-                            <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
-                                No failure tree data available.
-                            </div>
-                        )}
+                        <div
+                            ref={containerRef}
+                            className="relative origin-top-left"
+                            style={
+                                layoutBounds
+                                    ? {
+                                        width: `${layoutBounds.width}px`,
+                                        height: `${layoutBounds.height}px`,
+                                        transform: `scale(${zoom})`,
+                                    }
+                                    : {minHeight: "320px"}
+                            }
+                        >
+                            {layoutBounds && <ConnectorLayer containerRef={containerRef} edges={edges} zoom={zoom} />}
+                            {nodes}
+                            {loading && (
+                                <div className="absolute left-4 top-4 rounded-md bg-zinc-900/80 px-3 py-2 text-xs text-white/70">
+                                    Loading tree…
+                                </div>
+                            )}
+                            {error && !loading && (
+                                <div className="absolute left-4 top-4 rounded-md bg-red-900/80 px-3 py-2 text-xs text-white/90">
+                                    {error}
+                                </div>
+                            )}
+                            {!loading && !error && nodes.length === 0 && (
+                                <div className="absolute inset-0 flex items-center justify-center text-sm text-white/60">
+                                    No failure tree data available.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -13,7 +13,15 @@ const anchor = (el: HTMLElement, position: "top" | "bottom") => {
     return {x, y};
 };
 
-export const ConnectorLayer = ({containerRef, edges}: {containerRef: RefObject<HTMLDivElement>; edges: TreeEdge[]}) => {
+export const ConnectorLayer = ({
+    containerRef,
+    edges,
+    zoom = 1,
+}: {
+    containerRef: RefObject<HTMLDivElement>;
+    edges: TreeEdge[];
+    zoom?: number;
+}) => {
     const {nodes, subscribe} = useNodeRegistry();
     const [tick, setTick] = useState(0);
 
@@ -40,6 +48,10 @@ export const ConnectorLayer = ({containerRef, edges}: {containerRef: RefObject<H
         };
     }, [containerRef]);
 
+    useEffect(() => {
+        setTick((t) => t + 1);
+    }, [zoom]);
+
     const paths = useMemo(() => {
         const container = containerRef.current;
         if (!container) return [];
@@ -53,10 +65,10 @@ export const ConnectorLayer = ({containerRef, edges}: {containerRef: RefObject<H
             const start = anchor(fromEl, "bottom");
             const end = anchor(toEl, "top");
 
-            const x1 = start.x - bounds.left;
-            const y1 = start.y - bounds.top;
-            const x2 = end.x - bounds.left;
-            const y2 = end.y - bounds.top;
+            const x1 = (start.x - bounds.left) / zoom;
+            const y1 = (start.y - bounds.top) / zoom;
+            const x2 = (end.x - bounds.left) / zoom;
+            const y2 = (end.y - bounds.top) / zoom;
 
             if (Math.abs(x2 - x1) < 1) {
                 const dStraight = `M ${x1} ${y1} L ${x1} ${y2}`;
@@ -93,7 +105,7 @@ export const ConnectorLayer = ({containerRef, edges}: {containerRef: RefObject<H
                     d={path.d}
                     fill="none"
                     stroke="#94a3b8"
-                    strokeWidth={2.5}
+                    strokeWidth={2}
                     strokeLinejoin="round"
                 />
             ))}
