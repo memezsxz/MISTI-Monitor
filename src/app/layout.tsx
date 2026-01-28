@@ -35,6 +35,7 @@ export default function RootLayout({
     <head>
     <link rel="icon" href="/app_icon.png" type="image/png"/>
     <link rel="apple-touch-icon" href="/app_icon.png"/>
+        <title>MISTI Monitor</title>
     </head>
     <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

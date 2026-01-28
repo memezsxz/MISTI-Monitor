@@ -357,16 +357,8 @@ export const FailureTreePanel = ({
             viewport.scrollLeft = contentX * nextZoom - offsetX;
             viewport.scrollTop = contentY * nextZoom - offsetY;
             scrollRef.current = {left: viewport.scrollLeft, top: viewport.scrollTop};
-            if (onViewStateChange) {
-                onViewStateChange({
-                    zoom: nextZoom,
-                    collapsed: Array.from(collapsed),
-                    scrollLeft: viewport.scrollLeft,
-                    scrollTop: viewport.scrollTop,
-                });
-            }
         });
-    }, [collapsed, onViewStateChange]);
+    }, []);
 
     useEffect(() => {
         const viewport = viewportRef.current;
@@ -438,17 +430,10 @@ export const FailureTreePanel = ({
 
     useLayoutEffect(() => {
         if (restoredRef.current) return;
-        if (!viewState || !viewportRef.current) return;
+        if (!viewState) return;
         restoredRef.current = true;
-        setAutoFit(false);
-        setZoom(viewState.zoom);
         setCollapsed(new Set(viewState.collapsed));
-        requestAnimationFrame(() => {
-            if (!viewportRef.current) return;
-            viewportRef.current.scrollLeft = viewState.scrollLeft;
-            viewportRef.current.scrollTop = viewState.scrollTop;
-            scrollRef.current = {left: viewState.scrollLeft, top: viewState.scrollTop};
-        });
+        setAutoFit(true);
     }, [viewState]);
 
     const nodeDepthMap = useMemo(() => {
@@ -463,7 +448,6 @@ export const FailureTreePanel = ({
     }, [forest]);
 
     useLayoutEffect(() => {
-        if (viewState) return;
         if (!autoFit) return;
         if (!layoutBounds || !viewportRef.current) return;
         const {width: viewW, height: viewH} = viewportRef.current.getBoundingClientRect();
